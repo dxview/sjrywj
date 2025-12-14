@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三江县人民医院 - 表扬投诉系统</title>
+    <link rel="icon" href="./logo.png" type="image/png">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+        const { ThumbsUp, MessageSquare, Phone, ArrowLeft, Send, ChevronRight, X, Check } = lucide;
+
+        const FeedbackSystem = () => {
+  const [currentPage, setCurrentPage] = useState('home');
+  const [formData, setFormData] = useState({
+    department: '',
+    target: '',
+    name: '',
+    description: ''
+  });
+  const [showDeptModal, setShowDeptModal] = useState(false);
+  const [showTargetModal, setShowTargetModal] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const deptGroups = {
+    "行政管理科室": ["医务部/质安办", "医患办", "护理部", "预防保健科", "医保办", "财务科"],
+    "门诊及收费": ["门诊部", "门诊收费处", "住院收费处", "急诊医学科"],
+    "外科系统": ["普通外科、小儿外科、胸外科病区", "泌尿、神经、血管外科病区", "骨科一病区", "骨科二病区", "麻醉科"],
+    "内科系统": ["呼吸内科", "心血管、血液内科病区", "消化、内分泌内科", "神经内科", "肿瘤科、肾病内科", "感染性疾病科"],
+    "妇儿科室": ["妇产科", "儿科"],
+    "专科门诊": ["口腔科", "眼科、耳鼻喉科病区", "中医、康复科", "体检科", "慢病管理中心"],
+    "医技科室": ["检验科", "血库", "超声科", "放射科", "药剂科", "临床药学科"],
+    "重症监护": ["重症医学科病区"],
+    "其他": ["保卫室", "其他科室"]
+  };
+
+  const targetOptions = ["医生", "护士", "医生+护士", "技师", "药师", "后勤工作人员", "管理人员", "其他"];
+
+  const resetForm = () => {
+    setFormData({ department: '', target: '', name: '', description: '' });
+    setSubmitted(false);
+    setCurrentPage('home');
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.department || !formData.target || !formData.name || !formData.description) {
+      alert('请填写完整信息');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: currentPage,
+          department: formData.department,
+          target: formData.target,
+          name: formData.name,
+          description: formData.description
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setSubmitted(true);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        alert(data.message || '提交失败，请重试');
+      }
+    } catch (error) {
+      console.error('提交错误:', error);
+      alert('网络错误，请重试');
+    }
+  };
+
+  // 首页
+  if (currentPage === 'home') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-indigo-50">
+        {/* 头部 */}
+        <div className="bg-gradient-to-r from-teal-600 to-teal-700 text-white pb-32 pt-8 px-4 rounded-b-[3rem] shadow-2xl">
+          <div className="max-w-lg mx-auto text-center">
+            <div className="w-24 h-24 bg-white rounded-full mx-auto mb-5 flex items-center justify-center shadow-xl">
+              <div className="w-20 h-20 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                医
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold mb-2 leading-tight">三江侗族自治县人民医院</h1>
+            <p className="text-teal-100 text-base opacity-90">柳州市工人医院三江分院</p>
+            <div className="mt-4 flex items-center justify-center gap-2 text-teal-100">
+              <span className="h-px w-6 bg-teal-300/50"></span>
+              <span className="text-xs tracking-wider">厚德精医 · 仁爱自强</span>
+              <span className="h-px w-6 bg-teal-300/50"></span>
+            </div>
+          </div>
+        </div>
+
+        {/* 主内容区 */}
+        <div className="max-w-lg mx-auto px-4 -mt-24 pb-8">
+          {/* 提示卡片 */}
+          <div className="bg-white rounded-2xl p-4 shadow-lg mb-5 border-l-4 border-teal-500">
+            <div className="flex gap-3">
+              <div className="text-teal-600 text-xl shrink-0 mt-0.5">💚</div>
+              <div>
+                <h3 className="font-bold text-gray-800 text-sm mb-1">尊敬的患者/家属：</h3>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  感谢您使用我们的服务。您的每一份表扬和意见，都是帮助我们提升服务的宝贵参考。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 选项卡片 */}
+          <div className="space-y-3">
+            {/* 表扬 */}
+            <button
+              onClick={() => setCurrentPage('praise')}
+              className="w-full bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-5 shadow-md border-2 border-green-200 hover:shadow-lg transition-all active:scale-[0.98] active:shadow-sm"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-green-500 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
+                  <ThumbsUp size={26} />
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-lg font-bold text-gray-800">表扬</h3>
+                  <p className="text-xs text-gray-600 mt-0.5">为优质服务点赞</p>
+                </div>
+                <ChevronRight className="text-gray-400 shrink-0" size={20} />
+              </div>
+            </button>
+
+            {/* 投诉 */}
+            <button
+              onClick={() => setCurrentPage('complaint')}
+              className="w-full bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-5 shadow-md border-2 border-orange-200 hover:shadow-lg transition-all active:scale-[0.98] active:shadow-sm"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-orange-500 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
+                  <MessageSquare size={26} />
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-lg font-bold text-gray-800">投诉</h3>
+                  <p className="text-xs text-gray-600 mt-0.5">提出改进建议</p>
+                </div>
+                <ChevronRight className="text-gray-400 shrink-0" size={20} />
+              </div>
+            </button>
+
+            {/* 电话反馈 */}
+            <button
+              onClick={() => window.location.href = 'tel:0772-8612345'}
+              className="w-full bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 shadow-md border-2 border-blue-200 hover:shadow-lg transition-all active:scale-[0.98] active:shadow-sm"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-blue-500 rounded-xl flex items-center justify-center text-white shadow-lg shrink-0">
+                  <Phone size={26} />
+                </div>
+                <div className="flex-1 text-left">
+                  <h3 className="text-lg font-bold text-gray-800">电话反馈</h3>
+                  <p className="text-xs text-gray-600 mt-0.5">直接拨打 0772-8612345</p>
+                </div>
+                <ChevronRight className="text-gray-400 shrink-0" size={20} />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* 底部信息 */}
+        <div className="text-center py-6 px-4 text-gray-500 text-xs border-t border-gray-200 mt-4">
+          <p className="font-bold text-gray-600 mb-2">&copy; 2025 三江侗族自治县人民医院</p>
+          <div className="flex items-center justify-center gap-1.5 mb-3">
+            <span>🛡️</span>
+            <span>承诺：本系统严格匿名，仅用于提升服务质量</span>
+          </div>
+          <p className="text-gray-400">技术支持 | Shin吴允信 | v2.0.0</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 表扬/投诉表单页面
+  const isPraise = currentPage === 'praise';
+  const bgGradient = isPraise ? 'from-green-600 to-emerald-700' : 'from-orange-600 to-red-700';
+  const buttonGradient = isPraise ? 'from-green-500 to-emerald-600' : 'from-orange-500 to-red-600';
+  const accentColor = isPraise ? 'green' : 'orange';
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* 头部 */}
+      <div className={`bg-gradient-to-r ${bgGradient} text-white pb-24 pt-8 px-4 shadow-xl sticky top-0 z-10`}>
+        <div className="max-w-lg mx-auto flex items-center justify-between">
+          <button onClick={() => setCurrentPage('home')} className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center active:bg-white/30 transition-colors">
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-xl font-bold">{isPraise ? '表扬反馈' : '投诉建议'}</h1>
+          <div className="w-10"></div>
+        </div>
+      </div>
+
+      {/* 主内容 */}
+      <div className="max-w-lg mx-auto px-4 -mt-16 pb-8">
+        {submitted ? (
+          // 提交成功页面
+          <div className="bg-white rounded-3xl p-8 text-center shadow-xl">
+            <div className={`w-20 h-20 bg-${accentColor}-50 rounded-full flex items-center justify-center mx-auto mb-5 text-${accentColor}-500`}>
+              <Check size={40} strokeWidth={3} />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">
+              {isPraise ? '感谢您的表扬' : '感谢您的反馈'}
+            </h2>
+            <p className="text-sm text-gray-600 mb-6">
+              {isPraise ? '您的肯定是我们前进的动力！' : '我们会认真处理您的意见！'}
+            </p>
+            <button
+              onClick={resetForm}
+              className="w-full bg-teal-600 text-white px-6 py-3.5 rounded-xl font-bold shadow-lg hover:bg-teal-700 active:scale-[0.98] transition-all"
+            >
+              返回首页
+            </button>
+          </div>
+        ) : (
+          // 表单内容
+          <div className="space-y-4">
+            <div className="bg-white rounded-2xl p-5 shadow-lg">
+              <h3 className={`font-bold text-lg flex items-center gap-2 mb-5 ${isPraise ? 'text-green-700' : 'text-orange-700'}`}>
+                <span className={`w-1.5 h-5 rounded-full ${isPraise ? 'bg-green-500' : 'bg-orange-500'}`}></span>
+                {isPraise ? '表扬' : '投诉'}信息
+              </h3>
+
+              <div className="space-y-4">
+                {/* 科室选择 */}
+                <div 
+                  onClick={() => setShowDeptModal(true)} 
+                  className="border-2 border-gray-200 rounded-xl px-4 py-3 bg-white active:bg-gray-50 transition-colors"
+                >
+                  <label className="text-xs text-gray-600 font-bold mb-1.5 block">
+                    {isPraise ? '表扬' : '投诉'}科室 <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex justify-between items-center">
+                    <span className={`text-base ${formData.department ? 'text-gray-900 font-semibold' : 'text-gray-400'}`}>
+                      {formData.department || '请选择科室'}
+                    </span>
+                    <ChevronRight className="text-gray-400" size={18} />
+                  </div>
+                </div>
+
+                {/* 对象选择 */}
+                <div 
+                  onClick={() => setShowTargetModal(true)} 
+                  className="border-2 border-gray-200 rounded-xl px-4 py-3 bg-white active:bg-gray-50 transition-colors"
+                >
+                  <label className="text-xs text-gray-600 font-bold mb-1.5 block">
+                    {isPraise ? '表扬' : '投诉'}对象 <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex justify-between items-center">
+                    <span className={`text-base ${formData.target ? 'text-gray-900 font-semibold' : 'text-gray-400'}`}>
+                      {formData.target || '请选择对象'}
+                    </span>
+                    <ChevronRight className="text-gray-400" size={18} />
+                  </div>
+                </div>
+
+                {/* 姓名输入 */}
+                <div className="border-2 border-gray-200 rounded-xl px-4 py-3 bg-white focus-within:border-teal-500 transition-colors">
+                  <label className="text-xs text-gray-600 font-bold mb-1.5 block">
+                    被{isPraise ? '表扬' : '投诉'}人姓名 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full bg-transparent outline-none text-gray-900 text-base font-medium placeholder:text-gray-400"
+                    placeholder="请输入姓名"
+                  />
+                </div>
+
+                {/* 事件描述 */}
+                <div className="border-2 border-gray-200 rounded-xl px-4 py-3 bg-white focus-within:border-teal-500 transition-colors">
+                  <label className="text-xs text-gray-600 font-bold mb-1.5 block">
+                    {isPraise ? '表扬' : '投诉'}事件描述 <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    value={formData.description}
+                    onChange={(e) => setFormData({...formData, description: e.target.value})}
+                    className="w-full bg-transparent outline-none text-gray-900 text-base resize-none placeholder:text-gray-400"
+                    rows="5"
+                    placeholder={`请详细描述${isPraise ? '表扬' : '投诉'}事件...`}
+                  />
+                  <div className="text-xs text-gray-400 text-right mt-1">{formData.description.length}/500</div>
+                </div>
+              </div>
+            </div>
+
+            {/* 提交按钮 */}
+            <button
+              onClick={handleSubmit}
+              className={`w-full bg-gradient-to-r ${buttonGradient} text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2`}
+            >
+              <Send size={20} />
+              <span>提交{isPraise ? '表扬' : '投诉'}</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* 科室选择弹窗 */}
+      {showDeptModal && (
+        <div className="fixed inset-0 z-50 flex items-end bg-black/50 animate-in fade-in duration-200">
+          <div 
+            className="bg-white w-full rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center shrink-0">
+              <h3 className="font-bold text-gray-800 text-lg">选择科室</h3>
+              <button 
+                onClick={() => setShowDeptModal(false)} 
+                className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center active:scale-95 transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="overflow-y-auto px-3 py-2">
+              {Object.entries(deptGroups).map(([groupName, items]) => (
+                <div key={groupName} className="mb-3">
+                  <div className="bg-teal-50 text-teal-800 font-bold text-sm px-3 py-2 rounded-lg mb-1.5 sticky top-0 z-10">
+                    📁 {groupName}
+                  </div>
+                  {items.map(item => (
+                    <button
+                      key={item}
+                      onClick={() => {
+                        setFormData({...formData, department: item});
+                        setShowDeptModal(false);
+                      }}
+                      className="w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 active:bg-gray-100 rounded-lg transition-colors flex justify-between items-center"
+                    >
+                      <span className="text-sm">{item}</span>
+                      {formData.department === item && (
+                        <Check size={18} className="text-teal-500 shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 对象选择弹窗 */}
+      {showTargetModal && (
+        <div className="fixed inset-0 z-50 flex items-end bg-black/50 animate-in fade-in duration-200">
+          <div 
+            className="bg-white w-full rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+              <h3 className="font-bold text-gray-800 text-lg">选择对象</h3>
+              <button 
+                onClick={() => setShowTargetModal(false)} 
+                className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center active:scale-95 transition-all"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="px-3 py-2">
+              {targetOptions.map(target => (
+                <button
+                  key={target}
+                  onClick={() => {
+                    setFormData({...formData, target});
+                    setShowTargetModal(false);
+                  }}
+                  className="w-full text-left px-4 py-4 text-gray-700 hover:bg-gray-50 active:bg-gray-100 rounded-lg transition-colors flex justify-between items-center"
+                >
+                  <span className="text-base font-medium">{target}</span>
+                  {formData.target === target && (
+                    <Check size={18} className="text-teal-500 shrink-0" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+        // 渲染应用
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<FeedbackSystem />);
+    </script>
+</body>
+</html>
