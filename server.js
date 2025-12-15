@@ -141,6 +141,35 @@ app.post('/api/login', (req, res) => {
   }
 });
 
+// 管理后台登录
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  
+  if (password === ADMIN_PASSWORD) {
+    const token = jwt.sign({ admin: true }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ success: true, token });
+  } else {
+    res.status(401).json({ success: false, message: "密码错误" });
+  }
+});
+
+// 管理后台获取反馈列表
+app.get('/api/admin/list', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ success: false, message: "未授权" });
+  }
+  
+  try {
+    jwt.verify(token, JWT_SECRET);
+    const rows = await db.all('SELECT * FROM feedbacks ORDER BY created_at DESC');
+    res.json(rows);
+  } catch (error) {
+    res.status(401).json({ success: false, message: "认证失败" });
+  }
+});
+
 // 更新反馈状态
 app.put('/api/feedbacks/:id', async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -157,6 +186,47 @@ app.put('/api/feedbacks/:id', async (req, res) => {
     await db.run('UPDATE feedbacks SET status = ? WHERE id = ?', [status, id]);
     
     res.json({ success: true, message: "更新成功" });
+  } catch (error) {
+    res.status(401).json({ success: false, message: "操作失败" });
+  }
+});
+
+// 管理后台更新反馈状态
+app.put('/api/admin/update/:id', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ success: false, message: "未授权" });
+  }
+  
+  try {
+    jwt.verify(token, JWT_SECRET);
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    await db.run('UPDATE feedbacks SET status = ? WHERE id = ?', [status, id]);
+    
+    res.json({ success: true, message: "更新成功" });
+  } catch (error) {
+    res.status(401).json({ success: false, message: "操作失败" });
+  }
+});
+
+// 管理后台删除反馈
+app.delete('/api/admin/delete/:id', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ success: false, message: "未授权" });
+  }
+  
+  try {
+    jwt.verify(token, JWT_SECRET);
+    const { id } = req.params;
+    
+    await db.run('DELETE FROM feedbacks WHERE id = ?', [id]);
+    
+    res.json({ success: true, message: "删除成功" });
   } catch (error) {
     res.status(401).json({ success: false, message: "操作失败" });
   }
