@@ -17,10 +17,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(bodyParser.json());
 app.use(cors());
-
-app.use(express.static(path.join(__dirname, 'public')));
-
-// MySQL 连接池配置
+app.use(express.static(__dirname));
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'mysql',
   port: process.env.DB_PORT || 3306,
