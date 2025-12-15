@@ -480,11 +480,16 @@
                     <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100">
                         <div class="flex justify-between items-center mb-3">
                             <label class="text-sm font-bold text-slate-400 uppercase tracking-wider">联系方式</label>
-                            <span class="text-sm bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-medium">选填 · 仅用于反馈结果</span>
                         </div>
                         <div class="space-y-3">
-                            <input type="text" v-model="form.submitterName" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:bg-white transition-all placeholder-slate-400" :class="themeClass.ring" placeholder="您的姓名">
-                            <input type="tel" v-model="form.submitterPhone" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:bg-white transition-all placeholder-slate-400" :class="themeClass.ring" placeholder="手机号码">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">您的姓名 <span class="text-slate-400 text-xs">(选填)</span></label>
+                                <input type="text" v-model="form.submitterName" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:bg-white transition-all placeholder-slate-400" :class="themeClass.ring" placeholder="用于反馈结果通知（选填）">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-500 mb-1">手机号码 <span class="text-slate-400 text-xs">(选填)</span></label>
+                                <input type="tel" v-model="form.submitterPhone" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:bg-white transition-all placeholder-slate-400" :class="themeClass.ring" placeholder="用于反馈结果通知（选填）">
+                            </div>
                         </div>
                     </div>
                 </form>

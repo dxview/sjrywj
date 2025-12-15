@@ -1,13 +1,14 @@
 require('dotenv').config();
 const express = require('express');
-const mysql = require('mysql2/promise');
+const sqlite3 = require('sqlite3').verbose();
+const { open } = require('sqlite');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const path = require('path');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const xss = require('xss');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -15,61 +16,47 @@ const JWT_SECRET = process.env.JWT_SECRET || 'Hospital_Secure_Key_2025';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors());
 app.use(express.static(__dirname));
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'mysql',
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME || 'survey_db',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+
+// SQLite 数据库连接
+let db;
 
 // 初始化数据库
 async function initDB() {
   try {
-    const connection = await pool.getConnection();
+    db = await open({
+      filename: path.join(__dirname, 'hospital_feedback.db'),
+      driver: sqlite3.Database
+    });
     
-    const sql = `
+    // 创建表
+    await db.exec(`
       CREATE TABLE IF NOT EXISTS feedbacks (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        type VARCHAR(255),
-        department VARCHAR(255),
-        target_role VARCHAR(255),
-        target_name VARCHAR(255),
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT,
+        department TEXT,
+        target_role TEXT,
+        target_name TEXT,
         description TEXT,
-        submitter_name VARCHAR(255),
-        submitter_phone VARCHAR(20),
-        ip_address VARCHAR(45),
-        status VARCHAR(50) DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        submitter_name TEXT,
+        submitter_phone TEXT,
+        ip_address TEXT,
+        status TEXT DEFAULT 'pending',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
-    `;
+    `);
     
-    await connection.query(sql);
-    console.log('✓ MySQL 数据库初始化成功');
-    connection.release();
+    console.log('✅ SQLite 数据库初始化成功');
   } catch (error) {
-    console.error('✗ 数据库初始化失败:', error.message);
+    console.error('❌ 数据库初始化失败:', error.message);
   }
 }
 
-// 测试连接
-pool.getConnection()
-  .then(connection => {
-    console.log('✓ MySQL 连接成功');
-    connection.release();
-    initDB();
-  })
-  .catch(err => {
-    console.error('✗ MySQL 连接失败:', err.message);
-  });
-
-const now = () => new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+// 初始化数据库
+initDB();
 
 const submitLimiter = rateLimit({ 
   windowMs: 10 * 60 * 1000, 
@@ -84,13 +71,17 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
     description, submitterName, submitterPhone 
   } = req.body;
   
-  if (!type || !department || !targetRole || !description || !submitterName) {
+  // 验证必填字段
+  if (!type || !department || !targetRole || !description) {
+    console.log('❌ 缺少必要字段:', { type, department, targetRole, description });
     return res.json({ success: false, message: "缺少必要字段" });
   }
   
   try {
-    const connection = await pool.getConnection();
-    const ip = req.ip || req.connection.remoteAddress;
+    const ip = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+    
+    // 添加调试日志
+    console.log('收到反馈提交:', { type, department, targetRole, targetName, description, submitterName, submitterPhone });
     
     const sql = `
       INSERT INTO feedbacks 
@@ -98,7 +89,7 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
     
-    await connection.query(sql, [
+    const values = [
       xss(type),
       xss(department),
       xss(targetRole),
@@ -107,13 +98,17 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
       xss(submitterName),
       xss(submitterPhone || ''),
       ip
-    ]);
+    ];
     
-    connection.release();
-    res.json({ success: true, message: "反馈提交成功" });
+    console.log('📝 提交反馈:', { type, department, targetRole, targetName, description, submitterName, submitterPhone });
+    
+    const result = await db.run(sql, values);
+    
+    console.log('✅ 反馈提交成功，ID:', result.lastID);
+    res.json({ success: true, message: "反馈提交成功", id: result.lastID });
   } catch (error) {
-    console.error('提交失败:', error);
-    res.status(500).json({ success: false, message: "提交失败" });
+    console.error('❌ 提交失败:', error);
+    res.status(500).json({ success: false, message: "提交失败: " + error.message });
   }
 });
 
@@ -127,9 +122,7 @@ app.get('/api/feedbacks', async (req, res) => {
   
   try {
     jwt.verify(token, JWT_SECRET);
-    const connection = await pool.getConnection();
-    const [rows] = await connection.query('SELECT * FROM feedbacks ORDER BY created_at DESC');
-    connection.release();
+    const rows = await db.all('SELECT * FROM feedbacks ORDER BY created_at DESC');
     res.json({ success: true, data: rows });
   } catch (error) {
     res.status(401).json({ success: false, message: "认证失败" });
@@ -161,9 +154,7 @@ app.put('/api/feedbacks/:id', async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     
-    const connection = await pool.getConnection();
-    await connection.query('UPDATE feedbacks SET status = ? WHERE id = ?', [status, id]);
-    connection.release();
+    await db.run('UPDATE feedbacks SET status = ? WHERE id = ?', [status, id]);
     
     res.json({ success: true, message: "更新成功" });
   } catch (error) {
@@ -171,6 +162,27 @@ app.put('/api/feedbacks/:id', async (req, res) => {
   }
 });
 
+// 测试数据库连接的API
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const result = await db.get('SELECT COUNT(*) as count FROM feedbacks');
+    res.json({ 
+      success: true, 
+      message: "数据库连接正常", 
+      feedbackCount: result.count 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      message: "数据库连接失败", 
+      error: error.message 
+    });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`服务器运行在 ${PORT} 端口`);
+  console.log(`🚀 服务器运行在 ${PORT} 端口`);
+  console.log(`📱 前端访问: http://localhost:${PORT}`);
+  console.log(`🔧 管理后台: http://localhost:${PORT}/admin.html`);
+  console.log(`🗄️  数据库测试: http://localhost:${PORT}/api/test-db`);
 });
