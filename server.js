@@ -1,186 +1,179 @@
-require('dotenv').config(); // 加载 .env 环境变量
+require('dotenv').config();
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const mysql = require('mysql2/promise');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const cors = require('cors');
-const jwt = require('jsonwebtoken'); // 新增：JWT
-const xss = require('xss'); // 新增：XSS过滤
+const jwt = require('jsonwebtoken');
+const xss = require('xss');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const JWT_SECRET = process.env.JWT_SECRET;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const JWT_SECRET = process.env.JWT_SECRET || 'Hospital_Secure_Key_2025';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-// 检查配置
-if (!JWT_SECRET || !ADMIN_PASSWORD) {
-    console.error("严重错误：未设置 .env 配置文件，服务无法启动。");
-    process.exit(1);
-}
-
-// 1. 安全中间件
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(bodyParser.json());
-app.use(cors()); // 生产环境建议配置 origin 限制域名
+app.use(cors());
 
-// 2. 静态文件托管
-app.use(express.static(path.join(__dirname, 'public'), {
-    setHeaders: (res, filePath) => {
-        if (filePath.endsWith('.html')) res.set('Content-Type', 'text/html; charset=utf-8');
-    }
-}));
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// 3. 数据库连接
-const db = new sqlite3.Database('./survey.db', (err) => {
-    if (err) console.error("DB Error:", err.message);
-    else {
-        console.log('SQLite Connected Securely.');
-        db.run(`CREATE TABLE IF NOT EXISTS surveys (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            type TEXT NOT NULL,
-            department TEXT NOT NULL, 
-            target TEXT NOT NULL, 
-            name TEXT NOT NULL, 
-            description TEXT NOT NULL,
-            ip_address TEXT, 
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )`);
-    }
+// MySQL 连接池配置
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || 'mysql',
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || 'survey_db',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
 
-// 辅助：北京时间
-function getBeijingTime() {
-    const now = new Date();
-    const Y = now.getFullYear();
-    const M = String(now.getMonth() + 1).padStart(2, '0');
-    const D = String(now.getDate()).padStart(2, '0');
-    const h = String(now.getHours()).padStart(2, '0');
-    const m = String(now.getMinutes()).padStart(2, '0');
-    const s = String(now.getSeconds()).padStart(2, '0');
-    return `${Y}-${M}-${D} ${h}:${m}:${s}`;
+// 初始化数据库
+async function initDB() {
+  try {
+    const connection = await pool.getConnection();
+    
+    const sql = `
+      CREATE TABLE IF NOT EXISTS feedbacks (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        type VARCHAR(255),
+        department VARCHAR(255),
+        target_role VARCHAR(255),
+        target_name VARCHAR(255),
+        description TEXT,
+        submitter_name VARCHAR(255),
+        submitter_phone VARCHAR(20),
+        ip_address VARCHAR(45),
+        status VARCHAR(50) DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    
+    await connection.query(sql);
+    console.log('✓ MySQL 数据库初始化成功');
+    connection.release();
+  } catch (error) {
+    console.error('✗ 数据库初始化失败:', error.message);
+  }
 }
 
-// --- API 1: 用户提交 (增加 XSS 过滤) ---
-const submitLimiter = rateLimit({ windowMs: 10*60*1000, max: 20, message: "提交过于频繁，请稍后再试" });
+// 测试连接
+pool.getConnection()
+  .then(connection => {
+    console.log('✓ MySQL 连接成功');
+    connection.release();
+    initDB();
+  })
+  .catch(err => {
+    console.error('✗ MySQL 连接失败:', err.message);
+  });
 
-app.post('/api/submit', submitLimiter, (req, res) => {
-    let { type, department, target, name, description } = req.body;
-    
-    if (!type || !department || !target || !name || !description) {
-        return res.status(400).json({success: false, message: "缺少必填项"});
-    }
-    
-    // ★★★ 安全过滤：防止用户输入恶意脚本 ★★★
-    type = xss(type);
-    department = xss(department);
-    target = xss(target);
-    name = xss(name);
-    description = xss(description);
-    
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const createdAt = getBeijingTime();
-    
-    const sql = `INSERT INTO surveys (type, department, target, name, description, ip_address, created_at) VALUES (?,?,?,?,?,?,?)`;
-    
-    db.run(sql, [type, department, target, name, description, ip, createdAt], function(err) {
-        if(err) {
-            console.error("DB Write Error:", err.message);
-            return res.status(500).json({success: false, message: "数据库写入错误"});
-        }
-        res.json({success: true, message: "提交成功", id: this.lastID});
-    });
+const now = () => new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' });
+
+const submitLimiter = rateLimit({ 
+  windowMs: 10 * 60 * 1000, 
+  max: 10, 
+  message: { success: false, message: "操作过于频繁，请稍后再试" } 
 });
 
-// --- API 2: 管理员登录 (发放 JWT Token) ---
-app.post('/api/admin/login', (req, res) => {
-    const { password } = req.body;
-    // 比对密码
-    if (password === ADMIN_PASSWORD) {
-        // 生成 Token，有效期 24 小时
-        const token = jwt.sign({ role: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
-        res.json({ success: true, token: token });
-    } else {
-        res.status(401).json({ success: false, message: "密码错误" });
-    }
-});
-
-// --- 中间件：验证 JWT Token ---
-const verifyToken = (req, res, next) => {
-    const bearerHeader = req.headers['authorization'];
-    if (typeof bearerHeader !== 'undefined') {
-        const bearer = bearerHeader.split(' ');
-        const token = bearer[1];
-        jwt.verify(token, JWT_SECRET, (err, authData) => {
-            if (err) return res.status(403).json({ error: "Token无效或已过期" });
-            req.authData = authData;
-            next();
-        });
-    } else {
-        res.status(403).json({ error: "未授权访问" });
-    }
-};
-
-// --- API 3: 获取列表 (受保护) ---
-app.get('/api/admin/feedbacks', verifyToken, (req, res) => {
-    db.all("SELECT * FROM surveys ORDER BY created_at DESC", [], (err, rows) => {
-        if (err) {
-            console.error("DB Read Error:", err.message);
-            res.status(500).json({ success: false, message: "数据库读取错误" });
-        } else {
-            res.json({ success: true, data: rows });
-        }
-    });
-});
-
-// --- API 4: 删除记录 (受保护) ---
-app.delete('/api/admin/feedbacks/:id', verifyToken, (req, res) => {
-    db.run("DELETE FROM surveys WHERE id = ?", req.params.id, function(err) {
-        if (err) {
-            console.error("DB Delete Error:", err.message);
-            res.status(500).json({ success: false, message: "删除失败" });
-        } else {
-            res.json({ success: true, message: "删除成功" });
-        }
-    });
-});
-
-// --- API 5: 统计数据 (受保护) ---
-app.get('/api/admin/statistics', verifyToken, (req, res) => {
-    const today = getBeijingTime().split(' ')[0];
+// 提交反馈
+app.post('/api/submit', submitLimiter, async (req, res) => {
+  let { 
+    type, department, targetRole, targetName, 
+    description, submitterName, submitterPhone 
+  } = req.body;
+  
+  if (!type || !department || !targetRole || !description || !submitterName) {
+    return res.json({ success: false, message: "缺少必要字段" });
+  }
+  
+  try {
+    const connection = await pool.getConnection();
+    const ip = req.ip || req.connection.remoteAddress;
     
-    // 获取总数统计
-    db.all(`
-        SELECT 
-            COUNT(*) as total,
-            COUNT(CASE WHEN type = 'praise' THEN 1 END) as praise,
-            COUNT(CASE WHEN type = 'complaint' THEN 1 END) as complaint,
-            COUNT(CASE WHEN date(created_at) = date(?) THEN 1 END) as today
-        FROM surveys
-    `, [today], (err, totalStats) => {
-        if (err) {
-            console.error("DB Statistics Error:", err.message);
-            return res.status(500).json({ success: false, message: "统计查询错误" });
-        }
-        
-        const stats = totalStats[0];
-        res.json({ 
-            success: true, 
-            data: {
-                total: stats.total,
-                praise: stats.praise,
-                complaint: stats.complaint,
-                today: stats.today,
-                thisWeek: stats.total, // 简化版，可以后续优化
-                thisMonth: stats.total
-            }
-        });
-    });
+    const sql = `
+      INSERT INTO feedbacks 
+      (type, department, target_role, target_name, description, submitter_name, submitter_phone, ip_address) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    await connection.query(sql, [
+      xss(type),
+      xss(department),
+      xss(targetRole),
+      xss(targetName || ''),
+      xss(description),
+      xss(submitterName),
+      xss(submitterPhone || ''),
+      ip
+    ]);
+    
+    connection.release();
+    res.json({ success: true, message: "反馈提交成功" });
+  } catch (error) {
+    console.error('提交失败:', error);
+    res.status(500).json({ success: false, message: "提交失败" });
+  }
 });
 
-// 启动
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Security Server running on port ${PORT}`);
+// 获取反馈列表（需要认证）
+app.get('/api/feedbacks', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ success: false, message: "未授权" });
+  }
+  
+  try {
+    jwt.verify(token, JWT_SECRET);
+    const connection = await pool.getConnection();
+    const [rows] = await connection.query('SELECT * FROM feedbacks ORDER BY created_at DESC');
+    connection.release();
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    res.status(401).json({ success: false, message: "认证失败" });
+  }
+});
+
+// 登录
+app.post('/api/login', (req, res) => {
+  const { password } = req.body;
+  
+  if (password === ADMIN_PASSWORD) {
+    const token = jwt.sign({ admin: true }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ success: true, token });
+  } else {
+    res.status(401).json({ success: false, message: "密码错误" });
+  }
+});
+
+// 更新反馈状态
+app.put('/api/feedbacks/:id', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({ success: false, message: "未授权" });
+  }
+  
+  try {
+    jwt.verify(token, JWT_SECRET);
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    const connection = await pool.getConnection();
+    await connection.query('UPDATE feedbacks SET status = ? WHERE id = ?', [status, id]);
+    connection.release();
+    
+    res.json({ success: true, message: "更新成功" });
+  } catch (error) {
+    res.status(401).json({ success: false, message: "操作失败" });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`服务器运行在 ${PORT} 端口`);
 });
