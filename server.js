@@ -21,14 +21,23 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(cors());
 app.use(express.static(__dirname));
 
-// SQLite 数据库连接
+
 let db;
 
-// 初始化数据库
+
 async function initDB() {
   try {
+
+    const fs = require('fs');
+    const dataDir = '/data';
+    
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+      console.log('📁 创建 /data 目录');
+    }
+    
     db = await open({
-      filename: path.join(__dirname, 'hospital_feedback.db'),
+      filename: '/data/hospital_feedback.db',
       driver: sqlite3.Database
     });
     
@@ -49,12 +58,14 @@ async function initDB() {
     `);
     
     console.log('✅ SQLite 数据库初始化成功');
+    console.log('📍 数据库位置: /data/hospital_feedback.db');
   } catch (error) {
     console.error('❌ 数据库初始化失败:', error.message);
   }
 }
 
 initDB();
+
 
 const submitLimiter = rateLimit({ 
   windowMs: 10 * 60 * 1000, 
