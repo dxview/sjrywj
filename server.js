@@ -12,7 +12,7 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const JWT_SECRET = process.env.JWT_SECRET || 'Hospital_Secure_Key_2025';
+const JWT_SECRET = process.env.JWT_SECRET || 'Hospital_Secure_Key_025';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -32,7 +32,6 @@ async function initDB() {
       driver: sqlite3.Database
     });
     
-    // 创建表
     await db.exec(`
       CREATE TABLE IF NOT EXISTS feedbacks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,7 +54,6 @@ async function initDB() {
   }
 }
 
-// 初始化数据库
 initDB();
 
 const submitLimiter = rateLimit({ 
@@ -64,14 +62,12 @@ const submitLimiter = rateLimit({
   message: { success: false, message: "操作过于频繁，请稍后再试" } 
 });
 
-// 提交反馈
 app.post('/api/submit', submitLimiter, async (req, res) => {
   let { 
     type, department, targetRole, targetName, 
     description, submitterName, submitterPhone 
   } = req.body;
   
-  // 验证必填字段
   if (!type || !department || !targetRole || !description) {
     console.log('❌ 缺少必要字段:', { type, department, targetRole, description });
     return res.json({ success: false, message: "缺少必要字段" });
@@ -80,7 +76,6 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
   try {
     const ip = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
     
-    // 添加调试日志
     console.log('收到反馈提交:', { type, department, targetRole, targetName, description, submitterName, submitterPhone });
     
     const sql = `
@@ -100,8 +95,6 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
       ip
     ];
     
-    console.log('📝 提交反馈:', { type, department, targetRole, targetName, description, submitterName, submitterPhone });
-    
     const result = await db.run(sql, values);
     
     console.log('✅ 反馈提交成功，ID:', result.lastID);
@@ -112,7 +105,6 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
   }
 });
 
-// 获取反馈列表（需要认证）
 app.get('/api/feedbacks', async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   
@@ -129,7 +121,6 @@ app.get('/api/feedbacks', async (req, res) => {
   }
 });
 
-// 登录
 app.post('/api/login', (req, res) => {
   const { password } = req.body;
   
@@ -141,7 +132,6 @@ app.post('/api/login', (req, res) => {
   }
 });
 
-// 管理后台登录
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
   
@@ -153,7 +143,6 @@ app.post('/api/admin/login', (req, res) => {
   }
 });
 
-// 管理后台获取反馈列表
 app.get('/api/admin/list', async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   
@@ -170,7 +159,6 @@ app.get('/api/admin/list', async (req, res) => {
   }
 });
 
-// 更新反馈状态
 app.put('/api/feedbacks/:id', async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   
@@ -191,7 +179,6 @@ app.put('/api/feedbacks/:id', async (req, res) => {
   }
 });
 
-// 管理后台更新反馈状态
 app.put('/api/admin/update/:id', async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   
@@ -212,7 +199,6 @@ app.put('/api/admin/update/:id', async (req, res) => {
   }
 });
 
-// 管理后台删除反馈
 app.delete('/api/admin/delete/:id', async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   
@@ -232,7 +218,6 @@ app.delete('/api/admin/delete/:id', async (req, res) => {
   }
 });
 
-// 测试数据库连接的API
 app.get('/api/test-db', async (req, res) => {
   try {
     const result = await db.get('SELECT COUNT(*) as count FROM feedbacks');
