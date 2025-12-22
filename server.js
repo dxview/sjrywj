@@ -27,12 +27,12 @@ const pool = mysql.createPool({
   queueLimit: 0
 });
 
-// 数据库初始化
 async function initDB() {
   try {
-    await pool.query(`
+    const connection = await pool.getConnection();
+    await connection.query(`
       CREATE TABLE IF NOT EXISTS feedbacks (
-        id SERIAL PRIMARY KEY,
+        id INT AUTO_INCREMENT PRIMARY KEY,
         type VARCHAR(50),
         department VARCHAR(100),
         target_role VARCHAR(100),
@@ -45,12 +45,12 @@ async function initDB() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    
-    console.log('✅ PostgreSQL 数据库初始化成功');
-    console.log('📍 数据库连接状态:', process.env.DATABASE_URL ? '已配置' : '未配置');
+    connection.release();
+    console.log('✅ MySQL 数据库初始化成功');
+    console.log('📍 数据库连接状态: 已连接');
   } catch (error) {
     console.error('❌ 数据库初始化失败:', error.message);
-    console.error('请确保 PostgreSQL 服务已启动并且 DATABASE_URL 环境变量已配置');
+    console.error('请确保 MySQL 服务已启动并且环境变量已配置');
   }
 }
 
