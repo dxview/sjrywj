@@ -317,21 +317,24 @@
                     <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">详细内容</h4>
                     <div class="text-sm text-slate-600 leading-7 bg-slate-50 p-4 rounded-xl border border-slate-100 whitespace-pre-wrap">{{ curItem.description }}</div>
                 </div>
-
-                <div class="pt-2">
-                    <div class="flex items-center justify-between bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                        <div>
-                            <span class="text-[10px] text-indigo-400 font-bold uppercase block mb-1">提交人信息</span>
-                            <div class="font-bold text-indigo-900 text-sm">{{ curItem.submitter_name || '匿名' }}</div>
+                                <div class="pt-2">
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                        <span class="text-[10px] text-indigo-400 font-bold uppercase block mb-2">提交人信息</span>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-user text-indigo-400 text-sm w"></i>
+                                <span class="text-slate-700 font-medium">{{ curItem.submitter_name || '未填写' }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-phone text-indigo-400 text-sm w-5"></i>
+                                <span class="text-slate-700 font-medium">{{ curItem.submitter_phone || '未填写' }}</span>
+                                <a v-if="curItem.submitter_phone" :href="'tel:'+curItem.submitter_phone" class="ml-auto bg-indigo-600 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-indigo-700 transition-all">
+                                    <i class="fa-solid fa-phone mr-1"></i> 拨打
+                                </a>
+                            </div>
                         </div>
-                        <a v-if="curItem.submitter_phone" :href="'tel:'+curItem.submitter_phone" class="bg-white text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:shadow-md transition-all">
-                            <i class="fa-solid fa-phone mr-1"></i> 拨打
-                        </a>
-                        <span v-else class="text-xs text-indigo-300 font-bold px-2">无电话</span>
                     </div>
                 </div>
-            </div>
-
             <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
                 <span class="text-[10px] text-slate-400 font-mono">ID: {{ curItem.id }} · IP: {{ curItem.ip_address }}</span>
                 <button @click="deleteItem(curItem.id)" class="text-xs font-bold text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors">
