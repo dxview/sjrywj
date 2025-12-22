@@ -97,12 +97,13 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
   console.log('}');
 
   try {
-    const result = await pool.query(
-      `INSERT INTO feedbacks (type, department, target_role, target_name, description, submitter_name, submitter_phone, ip_address) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-       RETURNING id`,
-      [type, department, targetRole, targetName, description, submitterName, submitterPhone, ipAddress]
-    );
+const connection = await pool.getConnection();
+const [result] = await connection.query(
+  `INSERT INTO feedbacks (type, department, target_role, target_name, description, submitter_name, submitter_phone, ip_address) 
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  [type, department, targetRole, targetName, description, submitterName, submitterPhone, ipAddress]
+);
+connection.release();
     
     console.log(`✅ 反馈提交成功，ID: ${result.rows[0].id}`);
     res.json({ success: true, message: "提交成功", id: result.rows[0].id });
