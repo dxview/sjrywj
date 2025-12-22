@@ -62,7 +62,15 @@ initDB();
 const submitLimiter = rateLimit({ 
   windowMs: 10 * 60 * 1000, 
   max: 10, 
-  message: { success: false, message: "操作过于频繁，请稍后再试" } 
+  message: { success: false, message: "操作过于频繁，请稍后再试" },
+  skip: (req) => {
+    // 在生产环境中跳过本地请求
+    return req.ip === '127.0.0.1' || req.ip === '::1';
+  },
+  keyGenerator: (req) => {
+    // 使用 X-Forwarded-For 头来获取真实 IP
+    return req.headers['x-forwarded-for'] || req.ip;
+  }
 });
 
 // 提交反馈
