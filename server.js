@@ -11,10 +11,10 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const JWT_SECRET = process.env.JWT_SECRET || 'Hospital_Secure_Key_2025';
+const JWT_SECRET = process.env.JWT_SECRET || 'Hospital_Secure_Key_025';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-// 信任代理设置（修复 X-Forwarded-For 警告）
+// 信任代理设置
 app.set('trust proxy', true);
 
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -41,18 +41,128 @@ async function initDB() {
         target_name VARCHAR(100),
         description TEXT,
         submitter_name VARCHAR(100),
-        submitter_phone VARCHAR(),
-        ip_address VARCHAR(),
+        submitter_phone VARCHAR(50),
+        ip_address VARCHAR(50),
         status VARCHAR(20) DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     
     console.log('✅ PostgreSQL 数据库初始化成功');
-    console.log('📍 数据库连接: ', process.env.DATABASE_URL ? '已配置' : '未配置');
+    console.log('📍 数据库连接状态:', process.env.DATABASE_URL ? '已配置' : '未配置');
   } catch (error) {
     console.error('❌ 数据库初始化失败:', error.message);
+    console.error('请确保 PostgreSQL 服务已启动并且 DATABASE_URL 环境变量已配置');
   }
 }
 
 initDB();
+
+// 限流设置
+const submitLimiter = rateLimit({ 
+  windowMs: 10 * 60 * 1000, 
+  max: 10, 
+  message: { success: false, message: "操作过于频繁，请稍后再试" } 
+});
+
+// 提交反馈
+app.post('/api/submit', submitLimiter, async (req, res) => {
+  let { 
+    type, department, targetRole, targetName, 
+    description, submitterName, submitterPhone 
+  } = req.body;
+
+  targetRole = xss(targetRole);
+  targetName = xss(targetName);
+  description = xss(description);
+  submitterName = xss(submitterName);
+  submitterPhone = xss(submitterPhone);
+
+  const ipAddress = req.ip || req.connection.remoteAddress;
+
+  console.log('收到反馈提交: {');
+  console.log(`  type: '${type}',`);
+  console.log(`  department: '${department}',`);
+  console.log(`  targetRole: '${targetRole}',`);
+  console.log(`  targetName: '${targetName}',`);
+  console.log(`  description: '${description}',`);
+  console.log(`  submitterName: '${submitterName}',`);
+  console.log(`  submitterPhone: '${submitterPhone}'`);
+  console.log('}');
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO feedbacks (type, department, target_role, target_name, description, submitter_name, submitter_phone, ip_address) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+       RETURNING id`,
+      [type, department, targetRole, targetName, description, submitterName, submitterPhone, ipAddress]
+    );
+    
+    console.log(`✅ 反馈提交成功，ID: ${result.rows[0].id}`);
+    res.json({ success: true, message: "提交成功", id: result.rows[0].id });
+  } catch (error) {
+    console.error('❌ 提交失败:', error.message);
+    res.status(500).json({ success: false, message: "提交失败" });
+  }
+});
+
+// 管理员登录
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  
+  if (password === ADMIN_PASSWORD) {
+    const token = jwt.sign({ admin: true }, JWT_SECRET, { expiresIn: '24h' });
+    res.json({ success: true, token });
+  } else {
+    res.status(401).json({ success: false, message: "密码错误" });
+  }
+});
+
+// 获取反馈列表
+app.get('/api/admin/list', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  try {
+    jwt.verify(token, JWT_SECRET);
+    const result = await pool.query('SELECT * FROM feedbacks ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (error) {
+    res.status(401).json({ success: false, message: "认证失败" });
+  }
+});
+
+// 删除反馈
+app.delete('/api/admin/delete/:id', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  try {
+    jwt.verify(token, JWT_SECRET);
+    await pool.query('DELETE FROM feedbacks WHERE id = $1', [req.params.id]);
+    res.json({ success: true, message: "删除成功" });
+  } catch (error) {
+    res.status(401).json({ success: false, message: "认证失败" });
+  }
+});
+
+// 测试数据库连接
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT COUNT(*) as count FROM feedbacks');
+    res.json({ 
+      success: true, 
+      message: "数据库连接正常", 
+      count: parseInt(result.rows[0].count),
+      database: "PostgreSQL"
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 启动服务器
+app.listen(PORT, () => {
+  console.log(`🚀 服务器运行在 ${PORT} 端口`);
+  console.log(`📱 前端访问: http://localhost:${PORT}`);
+  console.log(`🔧 管理后台: http://localhost:${PORT}/admin.html`);
+  console.log(`🗄️  数据库测试: http://localhost:${PORT}/api/test-db`);
+});
