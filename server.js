@@ -56,6 +56,13 @@ initDB();
 
 // 中间件
 app.use(helmet());
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com blob:; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; img-src 'self' data: https:;"
+  );
+  next();
+});
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
