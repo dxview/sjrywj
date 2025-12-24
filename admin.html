@@ -115,7 +115,7 @@
                     <button @click="resetFilter" 
                         class="w-full text-left px-4 py-3.5 rounded-xl text-sm font-semibold leading-relaxed flex justify-between items-center transition-all sidebar-item"
                         :class="currentFilter === 'all' ? 'nav-active' : ''">
-                        <span class="flex items-center gap-3 text-sm"><i class="fa-solid fa-chart-pie w-4 text-center"></i> 综合看板</span>
+                        <span class="flex items-center gap-3"><i class="fa-solid fa-chart-pie w-4 text-center"></i> 综合看板</span>
                         <span v-if="list.length > 0" class="text-[11px] bg-white/10 px-2 py-0.5 rounded-md text-white font-mono font-bold">{{ list.length }}</span>
                     </button>
                 </div>
