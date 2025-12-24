@@ -14,45 +14,59 @@ const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET || 'Hospital_Secure_Key_025';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-// MySQL 连接池配置 - 简化版
+// MySQL 连接池配置
 const pool = mysql.createPool({
   host: process.env.MYSQL_HOST || 'mysql',
-  user: process.env.MYSQL_USER || 'survey_user',
+  user: process.env.MYSQL_USER || 'root',
   password: process.env.MYSQL_PASSWORD || '',
-  database: process.env.MYSQL_DATABASE || 'zeabur',
+  database: process.env.MYSQL_DATABASE || 'mysql',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelayMs: 0,
+  authPlugins: {
+    mysql_native_password: () => () => ''
+  }
 });
 
 let dbConnected = false;
 
-// 数据库初始化 - 非阻塞
+// 数据库初始化 - 带重试机制
 async function initDB() {
-  try {
-    const connection = await pool.getConnection();
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS feedbacks (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        type VARCHAR(50),
-        department VARCHAR(100),
-        target_role VARCHAR(100),
-        target_name VARCHAR(100),
-        description TEXT,
-        submitter_name VARCHAR(100),
-        submitter_phone VARCHAR(50),
-        ip_address VARCHAR(50),
-        status VARCHAR(20) DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    connection.release();
-    dbConnected = true;
-    console.log('✅ MySQL 数据库连接成功');
-  } catch (error) {
-    dbConnected = false;
-    console.error('⚠️ MySQL 连接失败，应用将以离线模式运行:', error.message);
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      const connection = await pool.getConnection();
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS feedbacks (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          type VARCHAR(50),
+          department VARCHAR(100),
+          target_role VARCHAR(100),
+          target_name VARCHAR(100),
+          description TEXT,
+          submitter_name VARCHAR(100),
+          submitter_phone VARCHAR(50),
+          ip_address VARCHAR(50),
+          status VARCHAR(20) DEFAULT 'pending',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      connection.release();
+      dbConnected = true;
+      console.log('✅ MySQL 数据库连接成功');
+      return;
+    } catch (error) {
+      retries--;
+      console.error(`⚠️ MySQL 连接失败 (重试 ${5 - retries}/5):`, error.message);
+      if (retries > 0) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
   }
+  dbConnected = false;
+  console.error('❌ MySQL 连接失败，应用将以离线模式运行');
 }
 
 // 异步初始化，不阻塞应用启动
