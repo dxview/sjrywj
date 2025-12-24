@@ -18,7 +18,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 const pool = mysql.createPool({
   host: process.env.MYSQL_HOST || 'mysql',
   user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || '',
+  password: process.env.MYSQL_PASSWORD || 'sjry2025',
   database: process.env.MYSQL_DATABASE || 'sjry',
   waitForConnections: true,
   connectionLimit: 10,
