@@ -225,13 +225,13 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// 静态文件路由
+// 静态文件路由 - 修复：指向 public 文件夹中的文件
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin.html'));
+  res.sendFile(path.join(__dirname, 'public/admin.html'));
 });
 
 // 启动服务器
