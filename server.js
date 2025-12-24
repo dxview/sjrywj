@@ -17,9 +17,9 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 // MySQL 连接池配置 - 简化版
 const pool = mysql.createPool({
   host: process.env.MYSQL_HOST || 'mysql',
-  user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || 'sjry2025',
-  database: process.env.MYSQL_DATABASE || 'sjry',
+  user: process.env.MYSQL_USER || 'survey_user',
+  password: process.env.MYSQL_PASSWORD || '',
+  database: process.env.MYSQL_DATABASE || 'zeabur',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -96,16 +96,16 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
     description, submitterName, submitterPhone 
   } = req.body;
 
-  // 数据验证
-  if (!type || !department || !description || !submitterName || !submitterPhone) {
+  // 数据验证 - 修复：联系方式字段现在是可选的
+  if (!type || !department || !description) {
     return res.status(400).json({ success: false, message: "缺少必要字段" });
   }
 
   targetRole = xss(targetRole || '');
   targetName = xss(targetName || '');
   description = xss(description);
-  submitterName = xss(submitterName);
-  submitterPhone = xss(submitterPhone);
+  submitterName = xss(submitterName || '');
+  submitterPhone = xss(submitterPhone || '');
 
   const ipAddress = req.ip || req.connection.remoteAddress;
 
