@@ -14,58 +14,48 @@ const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET || 'Hospital_Secure_Key_025';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-// MySQL 连接池配置
+// MySQL 连接池配置 - 简化版
 const pool = mysql.createPool({
   host: process.env.MYSQL_HOST || 'mysql',
   user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || 'sjry2025',  // 默认密码
+  password: process.env.MYSQL_PASSWORD || '',
   database: process.env.MYSQL_DATABASE || 'sjry',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelayMs: 0
+  queueLimit: 0
 });
 
-// 数据库初始化
+let dbConnected = false;
+
+// 数据库初始化 - 非阻塞
 async function initDB() {
-  let retries = 5;
-  while (retries > 0) {
-    try {
-      const connection = await pool.getConnection();
-      console.log('✅ MySQL 连接成功');
-      
-      await connection.query(`
-        CREATE TABLE IF NOT EXISTS feedbacks (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          type VARCHAR(50),
-          department VARCHAR(100),
-          target_role VARCHAR(100),
-          target_name VARCHAR(100),
-          description TEXT,
-          submitter_name VARCHAR(100),
-          submitter_phone VARCHAR(50),
-          ip_address VARCHAR(50),
-          status VARCHAR(20) DEFAULT 'pending',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-      
-      connection.release();
-      console.log('✅ MySQL 数据库初始化成功');
-      console.log('📍 数据库连接状态: 已连接');
-      return;
-    } catch (error) {
-      retries--;
-      console.error(`❌ 数据库连接失败 (剩余重试次数: ${retries}):`, error.message);
-      if (retries > 0) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-    }
+  try {
+    const connection = await pool.getConnection();
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS feedbacks (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        type VARCHAR(50),
+        department VARCHAR(100),
+        target_role VARCHAR(100),
+        target_name VARCHAR(100),
+        description TEXT,
+        submitter_name VARCHAR(100),
+        submitter_phone VARCHAR(50),
+        ip_address VARCHAR(50),
+        status VARCHAR(20) DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    connection.release();
+    dbConnected = true;
+    console.log('✅ MySQL 数据库连接成功');
+  } catch (error) {
+    dbConnected = false;
+    console.error('⚠️ MySQL 连接失败，应用将以离线模式运行:', error.message);
   }
-  console.error('❌ 无法连接到 MySQL，请检查配置');
 }
 
+// 异步初始化，不阻塞应用启动
 initDB();
 
 // 中间件
@@ -97,6 +87,10 @@ const submitLimiter = rateLimit({
 
 // 提交反馈
 app.post('/api/submit', submitLimiter, async (req, res) => {
+  if (!dbConnected) {
+    return res.status(503).json({ success: false, message: "数据库暂时不可用，请稍后重试" });
+  }
+
   let { 
     type, department, targetRole, targetName, 
     description, submitterName, submitterPhone 
@@ -114,8 +108,6 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
   submitterPhone = xss(submitterPhone);
 
   const ipAddress = req.ip || req.connection.remoteAddress;
-
-  console.log('收到反馈提交:', { type, department, targetRole, targetName, description, submitterName, submitterPhone });
 
   try {
     const connection = await pool.getConnection();
@@ -148,6 +140,10 @@ app.post('/api/admin/login', (req, res) => {
 
 // 获取反馈列表
 app.get('/api/admin/list', async (req, res) => {
+  if (!dbConnected) {
+    return res.status(503).json({ success: false, message: "数据库暂时不可用" });
+  }
+
   const token = req.headers.authorization?.split(' ')[1];
   
   try {
@@ -163,6 +159,10 @@ app.get('/api/admin/list', async (req, res) => {
 
 // 删除反馈
 app.delete('/api/admin/delete/:id', async (req, res) => {
+  if (!dbConnected) {
+    return res.status(503).json({ success: false, message: "数据库暂时不可用" });
+  }
+
   const token = req.headers.authorization?.split(' ')[1];
   
   try {
@@ -178,6 +178,14 @@ app.delete('/api/admin/delete/:id', async (req, res) => {
 
 // 测试数据库连接
 app.get('/api/test-db', async (req, res) => {
+  if (!dbConnected) {
+    return res.status(503).json({ 
+      success: false, 
+      message: "数据库连接失败",
+      status: "OFFLINE"
+    });
+  }
+
   try {
     const connection = await pool.getConnection();
     const [rows] = await connection.query('SELECT COUNT(*) as count FROM feedbacks');
@@ -186,11 +194,21 @@ app.get('/api/test-db', async (req, res) => {
       success: true, 
       message: "数据库连接正常", 
       count: rows[0].count,
-      database: "MySQL"
+      database: "MySQL",
+      status: "ONLINE"
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message, status: "ERROR" });
   }
+});
+
+// 健康检查端点
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: "OK",
+    database: dbConnected ? "CONNECTED" : "DISCONNECTED",
+    timestamp: new Date().toISOString()
+  });
 });
 
 // 静态文件路由
@@ -208,4 +226,5 @@ app.listen(PORT, () => {
   console.log(`📱 前端访问: http://localhost:${PORT}`);
   console.log(`🔐 管理员访问: http://localhost:${PORT}/admin`);
   console.log(`🧪 测试数据库: http://localhost:${PORT}/api/test-db`);
+  console.log(`❤️ 健康检查: http://localhost:${PORT}/api/health`);
 });
