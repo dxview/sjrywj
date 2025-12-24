@@ -14,42 +14,56 @@ const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET || 'Hospital_Secure_Key_025';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
-// MySQL 连接池
+// MySQL 连接池配置
 const pool = mysql.createPool({
   host: process.env.MYSQL_HOST || 'mysql',
   user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || '',
-  database: process.env.MYSQL_DATABASE || 'sjrywj',
+  password: process.env.MYSQL_PASSWORD || 'sjry2025',  // 默认密码
+  database: process.env.MYSQL_DATABASE || 'sjry',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  enableKeepAlive: true,
+  keepAliveInitialDelayMs: 0
 });
 
+// 数据库初始化
 async function initDB() {
-  try {
-    const connection = await pool.getConnection();
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS feedbacks (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        type VARCHAR(50),
-        department VARCHAR(100),
-        target_role VARCHAR(100),
-        target_name VARCHAR(100),
-        description TEXT,
-        submitter_name VARCHAR(100),
-        submitter_phone VARCHAR(50),
-        ip_address VARCHAR(50),
-        status VARCHAR(20) DEFAULT 'pending',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    connection.release();
-    console.log('✅ MySQL 数据库初始化成功');
-    console.log('📍 数据库连接状态: 已连接');
-  } catch (error) {
-    console.error('❌ 数据库初始化失败:', error.message);
-    console.error('请确保 MySQL 服务已启动并且环境变量已配置');
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      const connection = await pool.getConnection();
+      console.log('✅ MySQL 连接成功');
+      
+      await connection.query(`
+        CREATE TABLE IF NOT EXISTS feedbacks (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          type VARCHAR(50),
+          department VARCHAR(100),
+          target_role VARCHAR(100),
+          target_name VARCHAR(100),
+          description TEXT,
+          submitter_name VARCHAR(100),
+          submitter_phone VARCHAR(50),
+          ip_address VARCHAR(50),
+          status VARCHAR(20) DEFAULT 'pending',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      
+      connection.release();
+      console.log('✅ MySQL 数据库初始化成功');
+      console.log('📍 数据库连接状态: 已连接');
+      return;
+    } catch (error) {
+      retries--;
+      console.error(`❌ 数据库连接失败 (剩余重试次数: ${retries}):`, error.message);
+      if (retries > 0) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
   }
+  console.error('❌ 无法连接到 MySQL，请检查配置');
 }
 
 initDB();
@@ -67,6 +81,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
+
 // 限流设置
 const submitLimiter = rateLimit({ 
   windowMs: 10 * 60 * 1000, 
@@ -87,23 +102,20 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
     description, submitterName, submitterPhone 
   } = req.body;
 
-  targetRole = xss(targetRole);
-  targetName = xss(targetName);
+  // 数据验证
+  if (!type || !department || !description || !submitterName || !submitterPhone) {
+    return res.status(400).json({ success: false, message: "缺少必要字段" });
+  }
+
+  targetRole = xss(targetRole || '');
+  targetName = xss(targetName || '');
   description = xss(description);
   submitterName = xss(submitterName);
   submitterPhone = xss(submitterPhone);
 
   const ipAddress = req.ip || req.connection.remoteAddress;
 
-  console.log('收到反馈提交: {');
-  console.log(`  type: '${type}',`);
-  console.log(`  department: '${department}',`);
-  console.log(`  targetRole: '${targetRole}',`);
-  console.log(`  targetName: '${targetName}',`);
-  console.log(`  description: '${description}',`);
-  console.log(`  submitterName: '${submitterName}',`);
-  console.log(`  submitterPhone: '${submitterPhone}'`);
-  console.log('}');
+  console.log('收到反馈提交:', { type, department, targetRole, targetName, description, submitterName, submitterPhone });
 
   try {
     const connection = await pool.getConnection();
@@ -118,7 +130,7 @@ app.post('/api/submit', submitLimiter, async (req, res) => {
     res.json({ success: true, message: "提交成功", id: result.insertId });
   } catch (error) {
     console.error('❌ 提交失败:', error.message);
-    res.status(500).json({ success: false, message: "提交失败" });
+    res.status(500).json({ success: false, message: "提交失败: " + error.message });
   }
 });
 
@@ -195,4 +207,5 @@ app.listen(PORT, () => {
   console.log(`🚀 服务器运行在 ${PORT} 端口`);
   console.log(`📱 前端访问: http://localhost:${PORT}`);
   console.log(`🔐 管理员访问: http://localhost:${PORT}/admin`);
+  console.log(`🧪 测试数据库: http://localhost:${PORT}/api/test-db`);
 });
