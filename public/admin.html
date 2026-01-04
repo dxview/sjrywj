@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>医院意见反馈管理系统</title>
-    <link rel="icon" href="./logo.png" type="image/png">
-    
+<link rel="icon" href="/logo.png" type="image/png">    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -19,29 +18,59 @@
             color: #334155;
         }
         
-        /* 自定义滚动条 */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
         
-        /* 侧边栏样式 */
-        .sidebar-item { border-left: 3px solid transparent; }
-        .sidebar-item:hover { background-color: #1E293B; color: #E2E8F0; }
+        .sidebar-item { 
+            border-left: 3px solid transparent; 
+            position: relative;
+            overflow: hidden;
+        }
+        .sidebar-item:hover { 
+            background-color: #1E293B; 
+            color: #E2E8F0; 
+            transform: translateX(2px);
+        }
         .nav-active { 
             background-color: #0F766E !important; 
             color: white !important; 
             border-left: 3px solid #2DD4BF; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateX(0);
+        }
+        .nav-active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, #2DD4BF 0%, #0F766E 100%);
         }
         
-        /* 卡片渐变装饰 */
         .card-gradient-1 { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); }
         .card-gradient-2 { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
         .card-gradient-3 { background: linear-gradient(135deg, #F97316 0%, #EA580C 100%); }
         .card-gradient-4 { background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%); }
 
         [v-cloak] { display: none; }
+
+        @media (max-width: 768px) {
+            .text-xs { font-size: 14px; line-height: 1.5; }
+            .text-sm { font-size: 16px; line-height: 1.5; }
+            .text-base { font-size: 17px; line-height: 1.6; }
+            .text-lg { font-size: 19px; line-height: 1.6; }
+            .text-xl { font-size: 21px; line-height: 1.6; }
+            .text-2xl { font-size: 24px; line-height: 1.7; }
+            .text-3xl { font-size: 28px; line-height: 1.7; }
+            .text-slate-400 { font-size: 14px; }
+            .text-slate-500 { font-size: 15px; }
+            button { font-size: 16px; }
+            input, textarea { font-size: 16px; }
+            p { line-height: 1.6; }
+        }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex">
@@ -55,7 +84,7 @@
                 <div class="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
                     <img src="./logo.png" class="w-full h-full object-contain p-2">
                 </div>
-                <h2 class="text-2xl font-black text-slate-800 tracking-tight">管理后台登录</h2>
+                <h2 class="text-xl font-black text-slate-800 tracking-tight">管理后台登录</h2>
                 <p class="text-sm text-slate-400 mt-1">三江县人民医院 · 意见反馈中心</p>
             </div>
             <div class="space-y-4">
@@ -69,47 +98,46 @@
 
 
     <template v-else>
-        
-
         <aside class="w-64 bg-[#0F172A] text-slate-400 flex flex-col shrink-0 shadow-xl z-20">
-
-            <div class="h-20 flex items-center px-6 border-b border-slate-800 bg-[#0F172A] shrink-0 gap-3">
-                <img src="./logo.png" class="w-8 h-8 object-contain bg-white rounded-lg p-1">
+            <div class="h-20 flex items-center px-6 border-b border-slate-800 bg-[#0F172A] shrink-0 gap-4">
+                <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                    <img src="./logo.png" class="w-12 h-12 object-contain">
+                </div>
                 <div>
-                    <h1 class="font-bold text-white text-base leading-tight">反馈管理</h1>
-                    <p class="text-[10px] opacity-50 uppercase tracking-wider">Admin Panel</p>
+                    <h1 class="font-black text-white text-lg leading-tight">三江县人民医院<br/>反馈管理系统</h1>
+                    <p class="text-[11px] opacity-60 uppercase tracking-wider font-medium">Admin Panel</p>
                 </div>
             </div>
 
-
-            <div class="flex-1 overflow-y-auto py-6 space-y-6">
-
+            <div class="flex-1 overflow-y-auto py-6 space-y-4">
                 <div class="px-3">
                     <button @click="resetFilter" 
-                        class="w-full text-left px-4 py-3 rounded-xl text-sm font-bold flex justify-between items-center transition-all sidebar-item"
+                        class="w-full text-left px-4 py-3.5 rounded-xl text-sm font-semibold leading-relaxed flex justify-between items-center transition-all sidebar-item"
                         :class="currentFilter === 'all' ? 'nav-active' : ''">
-                        <span class="flex items-center gap-3"><i class="fa-solid fa-chart-pie"></i> 综合看板</span>
+                        <span class="flex items-center gap-3"><i class="fa-solid fa-chart-pie w-4 text-center"></i> 综合看板</span>
+                        <span v-if="list.length > 0" class="text-[11px] bg-white/10 px-2 py-0.5 rounded-md text-white font-mono font-bold">{{ list.length }}</span>
                     </button>
                 </div>
 
-
                 <div v-for="(items, group) in deptGroups" :key="group">
-                    <div class="px-6 mb-2 text-[10px] font-black uppercase tracking-widest text-slate-500 flex justify-between items-center group cursor-pointer" @click="filterByGroup(group)">
-                        <span>{{ group }}</span>
+                    <div class="px-6 mb-4 text-xs font-black uppercase tracking-wider text-slate-300 flex justify-between items-center group cursor-pointer hover:text-slate-300 transition-colors" @click="filterByGroup(group)">
+                        <span class="flex items-center gap-2">
+                            <span class="w-1.5 h-4 bg-teal-500 rounded-full opacity-60"></span>
+                            {{ group }}
+                        </span>
                         <i class="fa-solid fa-chevron-right text-[8px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
                     </div>
-                    <div class="px-3 space-y-1">
+                    <div class="px-3 space-y-1.5">
                         <button v-for="dept in items" :key="dept" 
                             @click="filterByDept(dept)"
-                            class="w-full text-left px-4 py-2.5 rounded-lg text-xs font-medium transition-all flex justify-between items-center sidebar-item"
+                            class="w-full text-left px-4 py-3 rounded-lg text-sm font-semibold leading-relaxed transition-all flex justify-between items-center sidebar-item"
                             :class="currentFilter === dept ? 'nav-active' : ''">
                             <span class="truncate">{{ dept }}</span>
-                            <span v-if="getCount(dept) > 0" class="text-[10px] bg-white/10 px-1.5 rounded-md text-white font-mono">{{ getCount(dept) }}</span>
+                            <span v-if="getCount(dept) > 0" class="text-[11px] bg-white/10 px-2 py-0.5 rounded-md text-white font-mono font-bold">{{ getCount(dept) }}</span>
                         </button>
                     </div>
                 </div>
             </div>
-
 
             <div class="p-4 border-t border-slate-800 bg-[#0F172A] shrink-0">
                 <button @click="logout" class="w-full flex items-center justify-center gap-2 text-rose-400 hover:text-white hover:bg-rose-500/20 py-3 rounded-xl transition-all text-xs font-bold">
@@ -118,10 +146,7 @@
             </div>
         </aside>
 
-
         <main class="flex-1 flex flex-col min-w-0 bg-[#F1F5F9] relative overflow-hidden">
-            
-
             <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0 sticky top-0 z-10">
                 <h2 class="font-bold text-slate-800 flex items-center gap-3 text-lg">
                     <span v-if="currentFilter === 'all'" class="flex items-center gap-2"><i class="fa-solid fa-house text-teal-600"></i> 全院概览</span>
@@ -130,19 +155,18 @@
                     <i v-if="isLoading" class="fa-solid fa-circle-notch fa-spin text-slate-400 ml-2 text-xs"></i>
                 </h2>
                 <div class="flex items-center gap-4">
-                    <span class="text-xs text-slate-400 font-mono bg-slate-100 px-3 py-1 rounded-full">上次更新: {{ lastUpdateTime }}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full" :class="healthStatus === 'healthy' ? 'bg-green-500 animate-pulse' : 'bg-red-500'"></span>
+                        <span class="text-xs text-slate-400 font-mono bg-slate-100 px-3 py-1 rounded-full">上次更新: {{ lastUpdateTime }}</span>
+                    </div>
                     <button @click="load(true)" class="w-9 h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-50 hover:text-teal-600 flex items-center justify-center transition-all shadow-sm text-slate-400">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
             </header>
 
-
             <div class="flex-1 overflow-y-auto p-8 scroll-smooth">
-                
-
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative overflow-hidden group">
                         <div class="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                         <div class="relative z-10">
@@ -153,7 +177,6 @@
                             </div>
                         </div>
                     </div>
-
 
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative overflow-hidden group">
                         <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
@@ -166,7 +189,6 @@
                         </div>
                     </div>
 
-
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative overflow-hidden group">
                         <div class="absolute right-0 top-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
                         <div class="relative z-10">
@@ -177,7 +199,6 @@
                             </div>
                         </div>
                     </div>
-
 
                     <div class="text-white rounded-2xl p-5 shadow-lg shadow-indigo-500/20 card-gradient-4 relative overflow-hidden">
                         <div class="absolute right-0 top-0 w-24 h-24 bg-white opacity-10 rounded-bl-full -mr-4 -mt-4"></div>
@@ -191,21 +212,17 @@
                     </div>
                 </div>
 
-
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 w-full text-left">满意度占比</h3>
                         <div class="w-48 h-48 relative">
                             <canvas id="chartRatio"></canvas>
-
                             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                 <span class="text-2xl font-black text-slate-700">{{ stats.commendationRate }}%</span>
                                 <span class="text-[10px] text-slate-400 uppercase">满意率</span>
                             </div>
                         </div>
                     </div>
-
 
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">科室反馈分布 (Top 8)</h3>
@@ -214,7 +231,6 @@
                         </div>
                     </div>
                 </div>
-
 
                 <div class="space-y-4">
                     <div class="flex items-center justify-between px-1">
@@ -233,8 +249,6 @@
                         <div v-for="item in filteredList" :key="item.id" 
                              @click="openModal(item)"
                              class="bg-white rounded-xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:border-teal-200 transition-all cursor-pointer group relative">
-                            
-
                             <div class="flex justify-between items-start mb-2">
                                 <div class="flex items-center gap-2">
                                     <span class="px-2 py-1 rounded-md text-[10px] font-bold border flex items-center gap-1"
@@ -247,11 +261,9 @@
                                 <span class="text-[10px] text-slate-400 font-mono">{{ formatTime(item.created_at) }}</span>
                             </div>
 
-
                             <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3 pl-1 border-l-2 border-slate-100 group-hover:border-teal-400 transition-colors">
                                 {{ item.description }}
                             </p>
-
 
                             <div class="flex items-center justify-between border-t border-slate-50 pt-3">
                                 <div class="flex items-center gap-3 text-[10px] text-slate-400 font-medium">
@@ -263,13 +275,11 @@
                                 </button>
                             </div>
 
-
                             <div v-if="isNew(item.created_at)" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full m-2 shadow-sm animate-pulse"></div>
                         </div>
                     </div>
                 </div>
                 
-
                 <div class="h-10"></div>
             </div>
         </main>
@@ -282,7 +292,7 @@
                  :class="curItem.type === 'commendation' ? 'card-gradient-2' : 'card-gradient-3'">
                 <div>
                     <div class="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Feedback Detail</div>
-                    <h3 class="text-xl font-bold flex items-center gap-2">
+                    <h3 class="text-2xl font-bold flex items-center gap-2">
                         {{ curItem.department }}
                         <span class="text-xs bg-white/20 px-2 py-0.5 rounded backdrop-blur-sm font-normal">{{ curItem.target_role }}</span>
                     </h3>
@@ -303,24 +313,27 @@
                 </div>
 
                 <div>
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">详细内容</h4>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">内容</h4>
                     <div class="text-sm text-slate-600 leading-7 bg-slate-50 p-4 rounded-xl border border-slate-100 whitespace-pre-wrap">{{ curItem.description }}</div>
                 </div>
-
-                <div class="pt-2">
-                    <div class="flex items-center justify-between bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                        <div>
-                            <span class="text-[10px] text-indigo-400 font-bold uppercase block mb-1">提交人信息</span>
-                            <div class="font-bold text-indigo-900 text-sm">{{ curItem.submitter_name || '匿名' }}</div>
+                                <div class="pt-2">
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                        <span class="text-[10px] text-indigo-400 font-bold uppercase block mb-2">提交人信息</span>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-user text-indigo-400 text-sm w"></i>
+                                <span class="text-slate-700 font-medium">{{ curItem.submitter_name || '未填写' }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-phone text-indigo-400 text-sm w-5"></i>
+                                <span class="text-slate-700 font-medium">{{ curItem.submitter_phone || '未填写' }}</span>
+                                <a v-if="curItem.submitter_phone" :href="'tel:'+curItem.submitter_phone" class="ml-auto bg-indigo-600 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-indigo-700 transition-all">
+                                    <i class="fa-solid fa-phone mr-1"></i> 拨打
+                                </a>
+                            </div>
                         </div>
-                        <a v-if="curItem.submitter_phone" :href="'tel:'+curItem.submitter_phone" class="bg-white text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:shadow-md transition-all">
-                            <i class="fa-solid fa-phone mr-1"></i> 拨打
-                        </a>
-                        <span v-else class="text-xs text-indigo-300 font-bold px-2">无电话</span>
                     </div>
                 </div>
-            </div>
-
             <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
                 <span class="text-[10px] text-slate-400 font-mono">ID: {{ curItem.id }} · IP: {{ curItem.ip_address }}</span>
                 <button @click="deleteItem(curItem.id)" class="text-xs font-bold text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors">
@@ -330,6 +343,31 @@
         </div>
     </div>
 
+
+
+    <!-- 通知弹窗 -->
+    <div class="fixed bottom-8 right-8 z-[100] flex flex-col gap-3 pointer-events-none">
+        <transition-group enter-active-class="animate__animated animate__bounceInRight" leave-active-class="animate__animated animate__fadeOutRight">
+            <div v-for="toast in toasts" :key="toast.id" class="pointer-events-auto bg-white border-l-4 rounded-xl shadow-2xl p-5 flex items-start gap-4 w-96 ring-1 ring-black/5 animate__animated animate__slideInUp" 
+                 :class="toast.type === '表扬' ? 'border-emerald-500' : 'border-orange-500'">
+                <div class="rounded-full w-10 h-10 flex items-center justify-center shrink-0 text-xl animate__animated animate__rubberBand"
+                    :class="toast.type === '表扬' ? 'bg-emerald-100 text-emerald-600' : 'bg-orange-100 text-orange-600'">
+                    <i :class="toast.type === '表扬' ? 'fa-solid fa-heart' : 'fa-solid fa-exclamation-triangle'"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-bold text-gray-800 text-lg flex items-center gap-2">
+                        <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                        收到新反馈！
+                    </h4>
+                    <p class="text-sm text-gray-500 mt-1">{{ toast.department }} - <span class="font-bold" :class="toast.type === '表扬' ? 'text-emerald-600' : 'text-orange-600'">{{ toast.type }}</span></p>
+                </div>
+                <button @click="removeToast(toast.id)" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+        </transition-group>
+    </div>
+
 </div>
 
 <script>
@@ -337,8 +375,7 @@
     createApp({
         setup() {
             const deptGroups = {
-                "行政管理科室": ["医务部/质安办", "医患办", "护理部", "预防保健科", "医保办", "财务科"],
-                "门诊及收费": ["门诊部", "门诊收费处", "住院收费处", "急诊医学科"],
+                "门诊及收费": ["门诊部", "门诊收费处", "住院收费处", "急诊医学科", "医保办"],
                 "外科系统": ["普通外科", "泌尿外科", "神经外科", "骨科一病区", "骨科二病区", "麻醉科"],
                 "内科系统": ["呼吸内科", "心血管内科", "消化内科", "神经内科", "肿瘤科", "感染性疾病科"],
                 "妇儿科室": ["妇产科", "儿科"],
@@ -357,8 +394,10 @@
             const showModal = ref(false);
             const curItem = ref({});
             const lastUpdateTime = ref('');
+            const toasts = ref([]);
+            const healthStatus = ref('healthy');
             let pollInterval = null;
-            
+            let lastMaxId = 0;
             let chartRatio = null;
             let chartDept = null;
 
@@ -367,11 +406,13 @@
                 if (token) {
                     isLoggedIn.value = true;
                     load();
-                    pollInterval = setInterval(() => load(true), 10000);
+                    startPolling();
                 }
             });
 
-            onUnmounted(() => { if(pollInterval) clearInterval(pollInterval); });
+            onUnmounted(() => { 
+                if(pollInterval) clearInterval(pollInterval); 
+            });
 
             const login = async () => {
                 try {
@@ -385,8 +426,12 @@
                         localStorage.setItem('admin_token', data.token);
                         isLoggedIn.value = true;
                         load();
-                    } else { alert('密码错误'); }
-                } catch (e) { alert('登录失败'); }
+                    } else { 
+                        alert('密码错误'); 
+                    }
+                } catch (e) { 
+                    alert('登录失败'); 
+                }
             };
 
             const logout = () => {
@@ -400,21 +445,65 @@
                 const token = localStorage.getItem('admin_token');
                 try {
                     const res = await fetch('/api/admin/list', { headers: { 'Authorization': 'Bearer ' + token } });
-                    if (res.status === 403) { logout(); return; }
-                    const data = await res.json();
-                    list.value = data;
-                    lastUpdateTime.value = new Date().toLocaleTimeString();
-                    
-                    if(!silent) nextTick(() => initCharts());
-                    else updateCharts();
-                    
-                } catch (e) { console.error(e); } 
-                finally { isLoading.value = false; }
+                    if (res.status === 403) { 
+                        logout(); 
+                        return; 
+                    }
+                    if (res.ok) {
+                        const data = await res.json();
+                        
+                        if(list.value.length > 0 && data.length > list.value.length) {
+                            const newItems = data.filter(d => d.id > lastMaxId);
+                            if(newItems.length > 0) {
+                                playNotificationSound();
+                                setTimeout(() => {
+                                    newItems.forEach(item => { 
+                                        if(lastMaxId > 0) showToast(item); 
+                                    });
+                                }, 100);
+                            }
+                        }
+                        
+                        list.value = data;
+                        if(data.length > 0) lastMaxId = Math.max(...data.map(i => i.id));
+                        
+                        lastUpdateTime.value = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                        healthStatus.value = 'healthy';
+                        
+                        if(!silent) nextTick(() => initCharts());
+                        else updateCharts();
+                    } else {
+                        healthStatus.value = 'error';
+                    }
+                } catch (e) { 
+                    console.error(e); 
+                    healthStatus.value = 'error';
+                } 
+                finally { 
+                    isLoading.value = false; 
+                }
             };
 
-            const resetFilter = () => { currentFilter.value = 'all'; currentGroup.value = ''; };
-            const filterByGroup = (group) => { currentGroup.value = group; currentFilter.value = ''; };
-            const filterByDept = (dept) => { currentFilter.value = dept; currentGroup.value = ''; };
+            const startPolling = () => { 
+                pollInterval = setInterval(() => { 
+                    load(true); 
+                }, 5000); 
+            };
+
+            const resetFilter = () => { 
+                currentFilter.value = 'all'; 
+                currentGroup.value = ''; 
+            };
+            
+            const filterByGroup = (group) => { 
+                currentGroup.value = group; 
+                currentFilter.value = ''; 
+            };
+            
+            const filterByDept = (dept) => { 
+                currentFilter.value = dept; 
+                currentGroup.value = ''; 
+            };
 
             const filteredList = computed(() => {
                 let res = list.value;
@@ -508,7 +597,9 @@
                 chartRatio.data.datasets[0].data = [stats.value.commendation, stats.value.complaint];
                 chartRatio.update();
                 const deptCounts = {};
-                filteredList.value.forEach(i => { deptCounts[i.department] = (deptCounts[i.department] || 0) + 1; });
+                filteredList.value.forEach(i => { 
+                    deptCounts[i.department] = (deptCounts[i.department] || 0) + 1; 
+                });
                 const sortedDepts = Object.entries(deptCounts).sort((a,b) => b[1] - a[1]).slice(0, 8);
                 chartDept.data.labels = sortedDepts.map(i => i[0]);
                 chartDept.data.datasets[0].data = sortedDepts.map(i => i[1]);
@@ -525,18 +616,60 @@
                 load(true);
             };
 
-            const openModal = (item) => { curItem.value = item; showModal.value = true; };
+            const openModal = (item) => { 
+                curItem.value = item; 
+                showModal.value = true; 
+            };
+            
             const getCount = (deptName) => list.value.filter(i => i.department === deptName).length;
-            const formatTime = (t) => new Date(t).toLocaleString('zh-CN', {month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
-            const isNew = (t) => (new Date() - new Date(t)) < 1000 * 60 * 10; 
+            
+            const formatTime = (t) => {
+                const date = new Date(t);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            
+            const isNew = (t) => (new Date() - new Date(t)) < 1000 * 60 * 10;
+            
+            const showToast = (item) => { 
+                const id = Date.now(); 
+                toasts.value.push({ 
+                    id, 
+                    department: item.department, 
+                    type: item.type === 'commendation' ? '表扬' : '投诉'
+                }); 
+                setTimeout(() => removeToast(id), 5000); 
+            };
+            
+            const removeToast = (id) => { 
+                toasts.value = toasts.value.filter(t => t.id !== id); 
+            };
+            
+
+
+            const playNotificationSound = () => {
+                try {
+                    const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2867/2867-preview.mp3');
+                    audio.volume = 0.5;
+                    audio.play().catch(e => {
+                        console.log('Audio play failed:', e);
+                        const fallbackAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+                        fallbackAudio.play().catch(() => {});
+                    });
+                } catch (e) {
+                    console.log('Audio creation failed:', e);
+                }
+            };
 
             return {
                 isLoggedIn, password, login, logout, deptGroups, 
                 list, filteredList, currentFilter, currentGroup, 
                 filterByGroup, filterByDept, resetFilter,
-                getCount, isLoading, load, lastUpdateTime,
+                getCount, isLoading, load, lastUpdateTime, healthStatus,
                 showModal, curItem, openModal, deleteItem,
-                stats, todayCount, formatTime, isNew
+                stats, todayCount, formatTime, isNew, toasts, removeToast
             };
         }
     }).mount('#app');
