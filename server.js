@@ -17,7 +17,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 // MySQL 连接池配置
 const pool = mysql.createPool({
   host: process.env.MYSQL_HOST || 'mysql',
-  user: process.env.MYSQL_USER || 'root',
+  user: process.env.MYSQL_USERNAME || 'root',
   password: process.env.MYSQL_PASSWORD || '',
   database: process.env.MYSQL_DATABASE || 'mysql',
   waitForConnections: true,
