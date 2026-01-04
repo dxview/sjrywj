@@ -7,8 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>三江县人民医院 - 意见反馈</title>
-    <link rel="icon" href="./logo.png" type="image/png">
-    
+<link rel="icon" href="/logo.png" type="image/png">    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -50,6 +49,202 @@
             border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
+        .back-button {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 1px 3px rgba(0, 0, 0, 0.1),
+                0 1px 2px rgba(0, 0, 0, 0.06),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            overflow: hidden;
+        }
+
+        .back-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            transition: left 0.5s ease;
+            pointer-events: none;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: 
+                0 4px 12px rgba(0, 0, 0, 0.15),
+                0 2px 4px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transform: translateY(-1px) scale(1.05);
+        }
+
+        .back-button:hover::before {
+            left: 100%;
+        }
+
+        .back-button:active {
+            transform: translateY(0) scale(0.98);
+            transition: transform 0.1s ease;
+            box-shadow: 
+                0 2px 6px rgba(0, 0, 0, 0.12),
+                0 1px 2px rgba(0, 0, 0, 0.08);
+        }
+
+        .back-button:hover .back-icon {
+            transform: translateX(-2px);
+        }
+
+        .back-button:active .back-icon {
+            transform: translateX(2px);
+        }
+
+        .back-icon {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: #475569;
+            font-size: 14px;
+            font-weight: 600;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+        }
+
+        .back-button:hover .back-icon {
+            color: #1e293b;
+        }
+
+        .back-button.theme-emerald:hover {
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+            border-color: rgba(16, 185, 129, 0.2);
+            box-shadow: 
+                0 4px 12px rgba(16, 185, 129, 0.15),
+                0 2px 4px rgba(16, 185, 129, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .back-button.theme-emerald:hover .back-icon {
+            color: #065f46;
+        }
+
+        .back-button.theme-orange:hover {
+            background: linear-gradient(135deg, #fff7ed 0%, #fef3c7 100%);
+            border-color: rgba(249, 115, 22, 0.2);
+            box-shadow: 
+                0 4px 12px rgba(249, 115, 22, 0.15),
+                0 2px 4px rgba(249, 115, 22, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .back-button.theme-orange:hover .back-icon {
+            color: #7c2d12;
+        }
+
+        @keyframes buttonPulse {
+            0%, 100% {
+                box-shadow: 
+                    0 1px 3px rgba(0, 0, 0, 0.1),
+                    0 1px 2px rgba(0, 0, 0, 0.06),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                    0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+            50% {
+                box-shadow: 
+                    0 1px 3px rgba(0, 0, 0, 0.1),
+                    0 1px 2px rgba(0, 0, 0, 0.06),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                    0 0 0 8px rgba(16, 185, 129, 0);
+            }
+        }
+
+        @keyframes buttonPulseOrange {
+            0%, 100% {
+                box-shadow: 
+                    0 1px 3px rgba(0, 0, 0, 0.1),
+                    0 1px 2px rgba(0, 0, 0, 0.06),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                    0 0 0 0 rgba(249, 115, 22, 0.4);
+            }
+            50% {
+                box-shadow: 
+                    0 1px 3px rgba(0, 0, 0, 0.1),
+                    0 1px 2px rgba(0, 0, 0, 0.06),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                    0 0 0 8px rgba(249, 115, 22, 0);
+            }
+        }
+
+        .back-button:active {
+            animation: longPressGlow 0.3s ease-out;
+        }
+
+        @keyframes longPressGlow {
+            0% {
+                box-shadow: 
+                    0 2px 6px rgba(0, 0, 0, 0.12),
+                    0 1px 2px rgba(0, 0, 0, 0.08);
+            }
+            50% {
+                box-shadow: 
+                    0 2px 6px rgba(0, 0, 0, 0.12),
+                    0 1px 2px rgba(0, 0, 0, 0.08),
+                    0 0 20px rgba(16, 185, 129, 0.3);
+            }
+            100% {
+                box-shadow: 
+                    0 2px 6px rgba(0, 0, 0, 0.12),
+                    0 1px 2px rgba(0, 0, 0, 0.08);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .back-button {
+                width: 36px;
+                height: 36px;
+                border-radius: 10px;
+            }
+            
+            .back-icon {
+                font-size: 12px;
+            }
+            
+            .nav-glass h2 {
+                font-size: 16px;
+            }
+        }
+
+        @media (prefers-contrast: high) {
+            .back-button {
+                border-width: 2px;
+                border-color: #1e293b;
+            }
+            
+            .back-icon {
+                color: #0f172a;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .back-button,
+            .back-button::before,
+            .back-icon {
+                transition: none;
+            }
+            
+            .back-button:hover {
+                transform: none;
+            }
+        }
+
         .page-enter-active, .page-leave-active { transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
         .page-enter-from { opacity: 0; transform: translateX(10px); }
         .page-leave-to { opacity: 0; transform: translateX(-5px); }
@@ -60,7 +255,21 @@
         input:focus, textarea:focus { 
             outline: none; 
         }
-    </style>
+        @media (max-width: 768px) {
+            .text-xs { font-size: 14px !important; line-height: 1.5 !important; }
+            .text-sm { font-size: 16px !important; line-height: 1.5 !important; }
+            .text-base { font-size: 17px !important; line-height: 1.6 !important; }
+            .text-lg { font-size: 19px !important; line-height: 1.6 !important; }
+            .text-xl { font-size: 22px !important; line-height: 1.6 !important; }
+            .text-2xl { font-size: 26px !important; line-height: 1.7 !important; }
+            .text-3xl { font-size: 32px !important; line-height: 1.7 !important; }
+            .text-slate-400 { font-size: 14px !important; }
+            .text-slate-500 { font-size: 15px !important; }
+            button { font-size: 16px !important; }
+            input, textarea { font-size: 16px !important; }
+            p { line-height: 1.6 !important; }
+        }
+            </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex flex-col">
 
@@ -81,11 +290,11 @@
                             <span class="w-1 h-3 bg-teal-500 rounded-full"></span>
                             <p class="text-teal-700 font-bold text-[10px] tracking-widest uppercase">Patient Voice</p>
                         </div>
-                        <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight leading-tight">意见反馈中心</h1>
+                        <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight leading-tight">三江县人民医院<br/>意见反馈中心</h1>
                         <p class="text-xs text-slate-500 mt-1 font-medium">聆听您的心声 · 共建美好医疗</p>
                     </div>
-                    <div class="w-14 h-14 bg-white rounded-2xl shadow-sm p-1.5 flex items-center justify-center border border-slate-50">
-                        <img src="/public/logo.png" class="w-full h-full object-cover">
+                    <div class="w-16 h-16 bg-white rounded-2xl shadow-sm p-1.5 flel items-center justify-center border border-slate-50">
+                        <img src="./logo.png" class="w-full h-full object-cover">
                     </div>
                 </div>
             </header>
@@ -99,8 +308,8 @@
                         <i class="fa-solid fa-bullhorn"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-slate-700 text-sm">尊敬的患者/家属</h3>
-                        <p class="text-[11px] text-slate-400 mt-1 leading-relaxed text-justify">
+                        <h3 class="font-bold text-slate-700 text-xm">尊敬的患者/家属</h3>
+                        <p class="text-[14px] text-slate-400 mt-1 leading-relaxed text-justify">
                             您的每一条建议都是我们改进的动力。本平台严格执行匿名保护机制，请放心反馈。
                         </p>
                     </div>
@@ -120,10 +329,10 @@
                             </div>
                             <div class="flex-1 pr-5 py-4 pl-2">
                                 <div class="flex justify-between items-center mb-1">
-                                    <h2 class="text-lg font-black text-slate-800">我要表扬</h2>
+                                    <h2 class="text-xl font-black text-slate-800">我要表扬</h2>
                                     <i class="fa-solid fa-arrow-right text-slate-200 text-xs group-hover:text-emerald-400 group-hover:translate-x-1 transition-all"></i>
                                 </div>
-                                <p class="text-xs text-slate-400 font-medium">认可医护服务 / 传递温暖与感动</p>
+                                <p class="text-sm text-slate-400 font-medium">认可医护服务 / 传递温暖与感动</p>
                             </div>
                         </div>
                     </div>
@@ -139,10 +348,10 @@
                             </div>
                             <div class="flex-1 pr-5 py-4 pl-2">
                                 <div class="flex justify-between items-center mb-1">
-                                    <h2 class="text-lg font-black text-slate-800">我要投诉</h2>
+                                    <h2 class="text-xl font-black text-slate-800">我要投诉</h2>
                                     <i class="fa-solid fa-arrow-right text-slate-200 text-xs group-hover:text-orange-400 group-hover:translate-x-1 transition-all"></i>
                                 </div>
-                                <p class="text-xs text-slate-400 font-medium">服务态度 / 流程建议 / 环境设施</p>
+                                <p class="text-sm text-slate-400 font-medium">服务态度 / 流程建议 / 环境设施</p>
                             </div>
                         </div>
                     </div>
@@ -150,37 +359,40 @@
 
 
                 <div class="pt-2">
-                    <a href="tel:0772-8612345" class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-1 shadow-lg shadow-blue-500/20 tap-card block">
+                    <a href="tel:0772-8616278" class="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl p-1 shadow-lg shadow-blue-500/20 tap-card block">
                         <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 flex items-center justify-between">
                             <div class="flex items-center gap-4 text-white">
                                 <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md border border-white/20">
                                     <i class="fa-solid fa-phone-volume animate-pulse"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-base leading-tight">电话直通车</h3>
-                                    <p class="text-[11px] text-blue-100 opacity-90 mt-0.5">0772-8612345 (点击拨打)</p>
+                                    <h3 class="font-bold text-xm leading-tight">电话反馈</h3>                              <p class="text-[13px] text-blue-100 opacity-90 mt-0.5">0772-8616278 (点击拨打)</p>
                                 </div>
                             </div>
-                            <span class="bg-white text-blue-600 text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm">立即联系</span>
+                            <span class="bg-white text-blue-600 text-[13px] font-bold px-3 py-1.5 rounded-full shadow-sm">立即联系</span>
                         </div>
                     </a>
                 </div>
 
 
-                <footer class="mt-8 pb-8 flex flex-col items-center gap-5">
+                <footer class="mt-4 pb-8 flex flex-col items-center gap-3">
                     
-                    <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 border border-slate-200">
-                        <i class="fa-solid fa-shield-halved text-teal-600 text-xs"></i>
-                        <span class="text-[10px] text-slate-500 font-bold">严格保护您的个人隐私信息</span>
+                    <div class="healing-border">
+                        <div class="healing-border-content flex items-center gap-2 px-6 py-4 rounded-full bg-gradient-to-r from-slate-50 to-white shadow-lg backdrop-blur-sm">
+                            <i class="fa-solid fa-shield-halved text-teal-600 text-base"></i>
+                            <span class="text-[16px] text-slate-700 font-semibold tracking-wide">严格保护您的个人隐私信息</span>
+                        </div>
                     </div>
 
 
-                    <div class="text-center space-y-1.5 opacity-60">
-                        <p class="text-[10px] text-slate-400 font-medium tracking-wide">© 2025 三江侗族自治县人民医院</p>
-                        <div class="flex items-center justify-center gap-2 text-[9px] text-slate-400 font-light">
+                    <div class="text-center space-y-2 opacity-70">
+                        <p class="text-[13px] text-slate-500 font-medium tracking-wider">© 2025 三江侗族自治县人民医院</p>
+                        <div class="flex items-center justify-center gap-2 text-[10px] text-slate-400 font-normal">
                             <span>技术支持: Shin吴允信</span>
-                            <span class="w-px h-2 bg-slate-300"></span>
+                            <span class="w-px h-2.5 bg-slate-400"></span>
                             <span>All Rights Reserved</span>
+                            <span class="w-px h-2.5 bg-slate-300"></span>
+                            <span>v1.1.0</span>
                         </div>
                     </div>
                 </footer>
@@ -194,13 +406,19 @@
             
 
             <div class="nav-glass h-14 px-4 flex items-center justify-between shrink-0 z-30 sticky top-0">
-                <button @click="currentView = 'home'" class="w-9 h-9 flex items-center justify-center text-slate-500 hover:bg-slate-100 rounded-full transition-colors active:scale-90">
-                    <i class="fa-solid fa-arrow-left text-sm"></i>
+                <button @click="handleBackNavigation" 
+                    :class="[
+                        'back-button', 
+                        currentView === 'commendation' ? 'theme-emerald' : 'theme-orange',
+                        { 'animate-pulse': showBackHint }
+                    ]"
+                    :style="{ animationDelay: showBackHint ? '0.5s' : '0s' }">
+                    <i class="fa-solid fa-arrow-left back-icon"></i>
                 </button>
-                <div class="font-bold text-base text-slate-800 tracking-wide">
+                <div class="font-bold text-lg text-slate-800 tracking-wide">
                     {{ currentView === 'commendation' ? '填写表扬信' : '填写投诉单' }}
                 </div>
-                <div class="w-9"></div>
+                <div class="w-10"></div>
             </div>
 
 
@@ -209,7 +427,7 @@
 
                 <div class="rounded-xl p-4 flex items-start gap-3 border" :class="themeClass.bannerBg">
                     <i class="fa-solid mt-0.5 text-sm" :class="[themeClass.icon, currentView === 'commendation' ? 'fa-heart' : 'fa-info-circle']"></i>
-                    <p class="text-xs leading-relaxed font-medium" :class="themeClass.textDark">
+                    <p class="text-sm leading-relaxed font-medium" :class="themeClass.textDark">
                         {{ currentView === 'commendation' 
                             ? '感谢您的认可！您的心意将第一时间传达给医护团队，这份温暖是我们不断前行的最大动力。' 
                             : '我们非常重视您的反馈。我们会对投诉内容进行认真核实与处理，并严格保护您的隐私信息。' }}
@@ -222,7 +440,7 @@
                     <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100 space-y-5">
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">涉及科室 <span class="text-red-400">*</span></label>
+                            <label class="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">涉及科室 <span class="text-red-400">*</span></label>
                             <div @click="showDeptModal = true" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3.5 flex justify-between items-center cursor-pointer tap-card transition-colors" :class="{'bg-white !border-current': form.department, [themeClass.text]: form.department}">
                                 <span class="font-bold text-sm" :class="form.department ? themeClass.text : 'text-slate-400 font-normal'">
                                     {{ form.department || '点击选择科室' }}
@@ -233,11 +451,11 @@
 
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">对象角色 <span class="text-red-400">*</span></label>
+                            <label class="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">对象角色 <span class="text-red-400">*</span></label>
                             <div class="flex flex-wrap gap-2">
                                 <button type="button" v-for="role in roles" :key="role" 
                                     @click="form.targetRole = role"
-                                    class="px-3 py-2 rounded-lg text-xs font-bold transition-all border border-transparent tap-card"
+                                    class="px-3 py-2 rounded-lg text-sm font-bold transition-all border border-transparent tap-card"
                                     :class="form.targetRole === role ? [themeClass.bg, 'text-white shadow-md'] : 'bg-slate-50 text-slate-600 border-slate-200'">
                                     {{ role }}
                                 </button>
@@ -246,22 +464,22 @@
 
 
                         <div v-if="currentView === 'commendation'" class="animate__animated animate__fadeIn">
-                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">TA的名字</label>
+                            <label class="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">TA的名字</label>
                             <input type="text" v-model="form.targetName" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:bg-white transition-all placeholder-slate-400 text-slate-800" :class="themeClass.ring" placeholder="如：张医生 (选填)">
                         </div>
                     </div>
 
 
                     <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100">
-                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">详细描述 <span class="text-red-400">*</span></label>
+                        <label class="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">内容 <span class="text-red-400">*</span></label>
                         <textarea v-model="form.description" rows="5" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm outline-none focus:bg-white transition-all resize-none placeholder-slate-400 text-slate-800" :class="themeClass.ring" :placeholder="currentView === 'commendation' ? '请输入具体时间...' : '请描述具体的时间、地点及经过，方便我们核实...'"></textarea>
                     </div>
 
 
                     <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100">
                         <div class="flex justify-between items-center mb-3">
-                            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">联系方式</label>
-                            <span class="text-[10px] bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-medium">选填 · 仅用于反馈结果</span>
+                            <label class="text-sm font-bold text-slate-400 uppercase tracking-wider">联系方式</label>
+                            <span class="text-sm bg-slate-100 text-slate-400 px-1.5 py-0.5 rounded font-medium">选填 · 仅用于反馈结果</span>
                         </div>
                         <div class="space-y-3">
                             <input type="text" v-model="form.submitterName" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-sm outline-none focus:bg-white transition-all placeholder-slate-400" :class="themeClass.ring" placeholder="您的姓名">
@@ -304,7 +522,7 @@
                 <div class="flex justify-between items-center px-5 py-4 border-b border-slate-100 bg-white z-20 shrink-0">
                     <div>
                         <h3 class="font-bold text-lg text-slate-800">选择科室</h3>
-                        <p class="text-[11px] text-slate-400 mt-0.5">请选择您就诊或反馈的科室</p>
+                        <p class="text-sm text-slate-400 mt-0.5">请选择您就诊或反馈的科室</p>
                     </div>
                     <button @click="showDeptModal = false" class="w-9 h-9 bg-slate-50 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
                         <i class="fa-solid fa-xmark text-lg"></i>
@@ -315,7 +533,7 @@
                     <div class="w-[6.5rem] bg-white overflow-y-auto hide-scrollbar shrink-0 pb-10">
                         <div v-for="(items, group) in deptGroups" :key="group" 
                              @click="scrollToGroup(group)"
-                             class="px-3 py-5 text-[13px] font-bold text-center leading-relaxed transition-all cursor-pointer relative"
+                             class="px-3 py-5 text-sm font-bold text-center leading-relaxed transition-all cursor-pointer relative"
                              :class="activeGroup === group ? [themeClass.text, 'bg-[#F8FAFC]'] : 'text-slate-400 hover:text-slate-600'">
                             {{ group }}
 
@@ -328,7 +546,7 @@
                             
                             <div class="sticky top-0 z-10 bg-[#F8FAFC]/95 backdrop-blur-sm py-3 mb-2 flex items-center">
                                 <span class="w-1.5 h-1.5 rounded-full mr-2" :class="themeClass.bg"></span>
-                                <h4 class="text-sm font-black text-slate-700">{{ group }}</h4>
+                                <h4 class="text-sm font-bold text-slate-700">{{ group }}</h4>
                             </div>
 
 
@@ -348,7 +566,7 @@
                         </div>
                         
 
-                        <div class="h-12 flex items-center justify-center text-xs text-slate-300">
+                        <div class="h-12 flex items-center justify-center text-sm text-slate-300">
                             - 到底了 -
                         </div>
                     </div>
@@ -367,12 +585,13 @@
             const showDeptModal = ref(false);
             const loading = ref(false);
             const submitted = ref(false);
-            const activeGroup = ref('行政管理科室');
+            const activeGroup = ref('门诊及收费');
             const isClickScrolling = ref(false);
+            const showBackHint = ref(false);
+            const backNavigationTimer = ref(null);
 
             const deptGroups = {
-                "行政管理科室": ["医务部/质安办", "医患办", "护理部", "预防保健科", "医保办", "财务科"],
-                "门诊及收费": ["门诊部", "门诊收费处", "住院收费处", "急诊医学科"],
+                "门诊及收费": ["门诊部", "门诊收费处", "住院收费处", "急诊医学科", "医保办"],
                 "外科系统": ["普通外科", "泌尿外科", "神经外科", "骨科一病区", "骨科二病区", "麻醉科"],
                 "内科系统": ["呼吸内科", "心血管内科", "消化内科", "神经内科", "肿瘤科", "感染性疾病科"],
                 "妇儿科室": ["妇产科", "儿科"],
@@ -387,7 +606,6 @@
                 department: '', targetRole: '', targetName: '', description: '', submitterName: '', submitterPhone: ''
             });
 
-            // ------------------ 配色系统 ------------------
             const themeClass = computed(() => {
                 const isCommend = currentView.value === 'commendation';
                 return {
@@ -404,6 +622,33 @@
             const switchView = (view) => {
                 Object.keys(form).forEach(k => form[k] = '');
                 currentView.value = view;
+                
+                if (view !== 'home') {
+                    showBackHint.value = true;
+                    if (backNavigationTimer.value) {
+                        clearTimeout(backNavigationTimer.value);
+                    }
+                    backNavigationTimer.value = setTimeout(() => {
+                        showBackHint.value = false;
+                    }, 3000);
+                } else {
+                    showBackHint.value = false;
+                }
+            };
+
+            const handleBackNavigation = () => {
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+
+                if (backNavigationTimer.value) {
+                    clearTimeout(backNavigationTimer.value);
+                    backNavigationTimer.value = null;
+                }
+
+                Object.keys(form).forEach(k => form[k] = '');
+                currentView.value = 'home';
+                showBackHint.value = false;
             };
 
             const selectDept = (dept) => {
@@ -459,7 +704,8 @@
 
             return { 
                 currentView, deptGroups, roles, form, showDeptModal, loading, submitted, activeGroup,
-                switchView, submitForm, resetForm, selectDept, scrollToGroup, onScroll, themeClass
+                showBackHint, switchView, submitForm, resetForm, selectDept, scrollToGroup, onScroll, 
+                themeClass, handleBackNavigation
             };
         }
     }).mount('#app');
