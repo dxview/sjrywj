@@ -14,7 +14,7 @@
     <style>
         body { 
             background-color: #F1F5F9; 
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; 
             color: #334155;
         }
         
@@ -57,19 +57,8 @@
 
         [v-cloak] { display: none; }
 
-        @media (max-width: 768px) {
-            .text-xs { font-size: 14px; line-height: 1.5; }
-            .text-sm { font-size: 16px; line-height: 1.5; }
-            .text-base { font-size: 17px; line-height: 1.6; }
-            .text-lg { font-size: 19px; line-height: 1.6; }
-            .text-xl { font-size: 21px; line-height: 1.6; }
-            .text-2xl { font-size: 24px; line-height: 1.7; }
-            .text-3xl { font-size: 28px; line-height: 1.7; }
-            .text-slate-400 { font-size: 14px; }
-            .text-slate-500 { font-size: 15px; }
-            button { font-size: 16px; }
-            input, textarea { font-size: 16px; }
-            p { line-height: 1.6; }
+        @media (min-width: 1024px) {
+            .dashboard-card-num { font-size: 2.5rem; }
         }
     </style>
 </head>
@@ -77,7 +66,6 @@
 
 <div id="app" v-cloak class="w-full h-full flex">
     
-
     <div v-if="!isLoggedIn" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/90 backdrop-blur-sm">
         <div class="bg-white p-10 rounded-2xl shadow-2xl w-[400px] animate__animated animate__fadeInUp">
             <div class="flex flex-col items-center mb-8">
@@ -98,184 +86,184 @@
 
 
     <template v-else>
-        <aside class="w-64 bg-[#0F172A] text-slate-400 flex flex-col shrink-0 shadow-xl z-20">
-            <div class="h-20 flex items-center px-6 border-b border-slate-800 bg-[#0F172A] shrink-0 gap-4">
+        <aside class="w-72 bg-[#0F172A] text-slate-400 flex flex-col shrink-0 shadow-xl z-20 transition-all duration-300">
+            <div class="h-24 flex items-center px-6 border-b border-slate-800 bg-[#0F172A] shrink-0 gap-4">
                 <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
                     <img src="./logo.png" class="w-12 h-12 object-contain">
                 </div>
                 <div>
-                    <h1 class="font-black text-white text-lg leading-tight">三江县人民医院<br/>反馈管理系统</h1>
-                    <p class="text-[11px] opacity-60 uppercase tracking-wider font-medium">Admin Panel</p>
+                    <h1 class="font-black text-white text-xl leading-tight">三江县人民医院<br/>反馈管理系统</h1>
+                    <p class="text-xs opacity-60 uppercase tracking-wider font-medium mt-1">Admin Panel</p>
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto py-6 space-y-4">
-                <div class="px-3">
+            <div class="flex-1 overflow-y-auto py-6 space-y-6">
+                <div class="px-4">
                     <button @click="resetFilter" 
-                        class="w-full text-left px-4 py-3.5 rounded-xl text-sm font-semibold leading-relaxed flex justify-between items-center transition-all sidebar-item"
+                        class="w-full text-left px-5 py-4 rounded-xl text-base font-bold leading-relaxed flex justify-between items-center transition-all sidebar-item"
                         :class="currentFilter === 'all' ? 'nav-active' : ''">
-                        <span class="flex items-center gap-3"><i class="fa-solid fa-chart-pie w-4 text-center"></i> 综合看板</span>
-                        <span v-if="list.length > 0" class="text-[11px] bg-white/10 px-2 py-0.5 rounded-md text-white font-mono font-bold">{{ list.length }}</span>
+                        <span class="flex items-center gap-3"><i class="fa-solid fa-chart-pie w-5 text-center"></i> 综合看板</span>
+                        <span v-if="list.length > 0" class="text-xs bg-white/10 px-2.5 py-1 rounded-md text-white font-mono font-bold">{{ list.length }}</span>
                     </button>
                 </div>
 
                 <div v-for="(items, group) in deptGroups" :key="group">
-                    <div class="px-6 mb-4 text-xs font-black uppercase tracking-wider text-slate-300 flex justify-between items-center group cursor-pointer hover:text-slate-300 transition-colors" @click="filterByGroup(group)">
+                    <div class="px-8 mb-3 text-lg font-black uppercase tracking-wide text-slate-300 flex justify-between items-center group cursor-pointer hover:text-white transition-colors" @click="filterByGroup(group)">
                         <span class="flex items-center gap-2">
-                            <span class="w-1.5 h-4 bg-teal-500 rounded-full opacity-60"></span>
+                            <span class="w-1.5 h-5 bg-teal-500 rounded-full opacity-80"></span>
                             {{ group }}
                         </span>
-                        <i class="fa-solid fa-chevron-right text-[8px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        <i class="fa-solid fa-chevron-right text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
                     </div>
-                    <div class="px-3 space-y-1.5">
+                    <div class="px-4 space-y-2">
                         <button v-for="dept in items" :key="dept" 
                             @click="filterByDept(dept)"
-                            class="w-full text-left px-4 py-3 rounded-lg text-sm font-semibold leading-relaxed transition-all flex justify-between items-center sidebar-item"
+                            class="w-full text-left px-5 py-3.5 rounded-lg text-sm font-semibold leading-relaxed transition-all flex justify-between items-center sidebar-item"
                             :class="currentFilter === dept ? 'nav-active' : ''">
                             <span class="truncate">{{ dept }}</span>
-                            <span v-if="getCount(dept) > 0" class="text-[11px] bg-white/10 px-2 py-0.5 rounded-md text-white font-mono font-bold">{{ getCount(dept) }}</span>
+                            <span v-if="getCount(dept) > 0" class="text-xs bg-white/10 px-2 py-0.5 rounded-md text-white font-mono font-bold">{{ getCount(dept) }}</span>
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div class="p-4 border-t border-slate-800 bg-[#0F172A] shrink-0">
-                <button @click="logout" class="w-full flex items-center justify-center gap-2 text-rose-400 hover:text-white hover:bg-rose-500/20 py-3 rounded-xl transition-all text-xs font-bold">
+            <div class="p-5 border-t border-slate-800 bg-[#0F172A] shrink-0">
+                <button @click="logout" class="w-full flex items-center justify-center gap-2 text-rose-400 hover:text-white hover:bg-rose-500/20 py-4 rounded-xl transition-all text-sm font-bold">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i> 安全退出
                 </button>
             </div>
         </aside>
 
         <main class="flex-1 flex flex-col min-w-0 bg-[#F1F5F9] relative overflow-hidden">
-            <header class="h-16 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 shrink-0 sticky top-0 z-10">
-                <h2 class="font-bold text-slate-800 flex items-center gap-3 text-lg">
+            <header class="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-10 shrink-0 sticky top-0 z-10">
+                <h2 class="font-bold text-slate-800 flex items-center gap-3 text-xl">
                     <span v-if="currentFilter === 'all'" class="flex items-center gap-2"><i class="fa-solid fa-house text-teal-600"></i> 全院概览</span>
                     <span v-else-if="currentGroup" class="flex items-center gap-2"><i class="fa-solid fa-layer-group text-blue-600"></i> {{ currentGroup }}</span>
                     <span v-else class="flex items-center gap-2"><i class="fa-solid fa-hospital text-indigo-600"></i> {{ currentFilter }}</span>
-                    <i v-if="isLoading" class="fa-solid fa-circle-notch fa-spin text-slate-400 ml-2 text-xs"></i>
+                    <i v-if="isLoading" class="fa-solid fa-circle-notch fa-spin text-slate-400 ml-2 text-sm"></i>
                 </h2>
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full" :class="healthStatus === 'healthy' ? 'bg-green-500 animate-pulse' : 'bg-red-500'"></span>
-                        <span class="text-xs text-slate-400 font-mono bg-slate-100 px-3 py-1 rounded-full">上次更新: {{ lastUpdateTime }}</span>
+                        <span class="w-2.5 h-2.5 rounded-full" :class="healthStatus === 'healthy' ? 'bg-green-500 animate-pulse' : 'bg-red-500'"></span>
+                        <span class="text-sm text-slate-500 font-mono bg-slate-100 px-4 py-1.5 rounded-full">更新: {{ lastUpdateTime }}</span>
                     </div>
-                    <button @click="load(true)" class="w-9 h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-50 hover:text-teal-600 flex items-center justify-center transition-all shadow-sm text-slate-400">
+                    <button @click="load(true)" class="w-10 h-10 rounded-full bg-white border border-slate-200 hover:bg-slate-50 hover:text-teal-600 flex items-center justify-center transition-all shadow-sm text-slate-400 text-lg">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-8 scroll-smooth">
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative overflow-hidden group">
-                        <div class="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+            <div class="flex-1 overflow-y-auto p-10 scroll-smooth">
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-10">
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 w-28 h-28 bg-blue-50 rounded-bl-full -mr-6 -mt-6 transition-transform group-hover:scale-110"></div>
                         <div class="relative z-10">
-                            <div class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">反馈总数</div>
-                            <div class="text-3xl font-black text-slate-800">{{ filteredList.length }}</div>
-                            <div class="mt-4 flex items-center gap-2 text-xs font-medium text-blue-600 bg-blue-50 w-fit px-2 py-1 rounded-lg">
+                            <div class="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">反馈总数</div>
+                            <div class="text-4xl font-black text-slate-800 mb-4">{{ filteredList.length }}</div>
+                            <div class="flex items-center gap-2 text-sm font-medium text-blue-600 bg-blue-50 w-fit px-3 py-1.5 rounded-lg">
                                 <i class="fa-solid fa-inbox"></i> 全部记录
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative overflow-hidden group">
-                        <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 w-28 h-28 bg-emerald-50 rounded-bl-full -mr-6 -mt-6 transition-transform group-hover:scale-110"></div>
                         <div class="relative z-10">
-                            <div class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">收到表扬</div>
-                            <div class="text-3xl font-black text-emerald-600">{{ stats.commendation }}</div>
-                            <div class="mt-4 flex items-center gap-2 text-xs font-medium text-emerald-600 bg-emerald-50 w-fit px-2 py-1 rounded-lg">
+                            <div class="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">收到表扬</div>
+                            <div class="text-4xl font-black text-emerald-600 mb-4">{{ stats.commendation }}</div>
+                            <div class="flex items-center gap-2 text-sm font-medium text-emerald-600 bg-emerald-50 w-fit px-3 py-1.5 rounded-lg">
                                 <i class="fa-solid fa-heart"></i> 占比 {{ stats.commendationRate }}%
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative overflow-hidden group">
-                        <div class="absolute right-0 top-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+                    <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group">
+                        <div class="absolute right-0 top-0 w-28 h-28 bg-orange-50 rounded-bl-full -mr-6 -mt-6 transition-transform group-hover:scale-110"></div>
                         <div class="relative z-10">
-                            <div class="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">收到投诉</div>
-                            <div class="text-3xl font-black text-orange-600">{{ stats.complaint }}</div>
-                            <div class="mt-4 flex items-center gap-2 text-xs font-medium text-orange-600 bg-orange-50 w-fit px-2 py-1 rounded-lg">
+                            <div class="text-slate-500 text-sm font-bold uppercase tracking-wider mb-2">收到投诉</div>
+                            <div class="text-4xl font-black text-orange-600 mb-4">{{ stats.complaint }}</div>
+                            <div class="flex items-center gap-2 text-sm font-medium text-orange-600 bg-orange-50 w-fit px-3 py-1.5 rounded-lg">
                                 <i class="fa-solid fa-triangle-exclamation"></i> 需重点关注
                             </div>
                         </div>
                     </div>
 
-                    <div class="text-white rounded-2xl p-5 shadow-lg shadow-indigo-500/20 card-gradient-4 relative overflow-hidden">
-                        <div class="absolute right-0 top-0 w-24 h-24 bg-white opacity-10 rounded-bl-full -mr-4 -mt-4"></div>
+                    <div class="text-white rounded-2xl p-6 shadow-lg shadow-indigo-500/20 card-gradient-4 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 w-28 h-28 bg-white opacity-10 rounded-bl-full -mr-6 -mt-6"></div>
                         <div class="relative z-10">
-                            <div class="text-indigo-100 text-xs font-bold uppercase tracking-wider mb-1">今日新增</div>
-                            <div class="text-3xl font-black">{{ todayCount }}</div>
-                            <div class="mt-4 flex items-center gap-2 text-xs font-medium text-white bg-white/20 w-fit px-2 py-1 rounded-lg backdrop-blur-sm">
+                            <div class="text-indigo-100 text-sm font-bold uppercase tracking-wider mb-2">今日新增</div>
+                            <div class="text-4xl font-black mb-4">{{ todayCount }}</div>
+                            <div class="flex items-center gap-2 text-sm font-medium text-white bg-white/20 w-fit px-3 py-1.5 rounded-lg backdrop-blur-sm">
                                 <i class="fa-regular fa-clock"></i> 实时监控中
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 w-full text-left">满意度占比</h3>
-                        <div class="w-48 h-48 relative">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 w-full text-left">满意度占比</h3>
+                        <div class="w-56 h-56 relative">
                             <canvas id="chartRatio"></canvas>
                             <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                <span class="text-2xl font-black text-slate-700">{{ stats.commendationRate }}%</span>
-                                <span class="text-[10px] text-slate-400 uppercase">满意率</span>
+                                <span class="text-3xl font-black text-slate-700">{{ stats.commendationRate }}%</span>
+                                <span class="text-xs text-slate-400 uppercase mt-1">满意率</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">科室反馈分布 (Top 8)</h3>
-                        <div class="h-48 w-full">
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
+                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">科室反馈分布 (Top 8)</h3>
+                        <div class="h-56 w-full">
                             <canvas id="chartDept"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <div class="space-y-4">
+                <div class="space-y-6">
                     <div class="flex items-center justify-between px-1">
-                        <h3 class="font-bold text-slate-700">📋 详细记录</h3>
-                        <div class="text-xs text-slate-400">共 {{ filteredList.length }} 条记录</div>
+                        <h3 class="font-bold text-slate-700 text-lg">📋 详细记录</h3>
+                        <div class="text-sm text-slate-500">共 {{ filteredList.length }} 条记录</div>
                     </div>
 
                     <div v-if="filteredList.length === 0" class="bg-white rounded-2xl p-12 text-center border border-slate-100 border-dashed">
-                        <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300 text-2xl">
+                        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300 text-3xl">
                             <i class="fa-solid fa-inbox"></i>
                         </div>
-                        <p class="text-slate-400 text-sm">暂无相关数据，喝杯咖啡休息一下吧 ☕️</p>
+                        <p class="text-slate-400 text-base">暂无相关数据，喝杯咖啡休息一下吧 ☕️</p>
                     </div>
 
-                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
                         <div v-for="item in filteredList" :key="item.id" 
                              @click="openModal(item)"
-                             class="bg-white rounded-xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:border-teal-200 transition-all cursor-pointer group relative">
-                            <div class="flex justify-between items-start mb-2">
-                                <div class="flex items-center gap-2">
-                                    <span class="px-2 py-1 rounded-md text-[10px] font-bold border flex items-center gap-1"
+                             class="bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:border-teal-200 transition-all cursor-pointer group relative">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="px-2.5 py-1 rounded-md text-xs font-bold border flex items-center gap-1.5"
                                           :class="item.type === 'commendation' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-orange-50 text-orange-600 border-orange-100'">
                                         <i :class="item.type === 'commendation' ? 'fa-solid fa-heart' : 'fa-solid fa-circle-exclamation'"></i>
                                         {{ item.type === 'commendation' ? '表扬' : '投诉' }}
                                     </span>
-                                    <h4 class="font-bold text-slate-700 text-sm truncate max-w-[150px]">{{ item.department }}</h4>
+                                    <h4 class="font-bold text-slate-700 text-base truncate max-w-[200px]">{{ item.department }}</h4>
                                 </div>
-                                <span class="text-[10px] text-slate-400 font-mono">{{ formatTime(item.created_at) }}</span>
+                                <span class="text-xs text-slate-400 font-mono mt-1">{{ formatTime(item.created_at) }}</span>
                             </div>
 
-                            <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-3 pl-1 border-l-2 border-slate-100 group-hover:border-teal-400 transition-colors">
+                            <p class="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-4 pl-3 border-l-4 border-slate-100 group-hover:border-teal-400 transition-colors">
                                 {{ item.description }}
                             </p>
 
-                            <div class="flex items-center justify-between border-t border-slate-50 pt-3">
-                                <div class="flex items-center gap-3 text-[10px] text-slate-400 font-medium">
-                                    <span class="bg-slate-50 px-2 py-0.5 rounded">{{ item.target_role }} {{ item.target_name }}</span>
-                                    <span><i class="fa-regular fa-user mr-1"></i>{{ item.submitter_name || '匿名' }}</span>
+                            <div class="flex items-center justify-between border-t border-slate-50 pt-4">
+                                <div class="flex items-center gap-4 text-xs text-slate-500 font-medium">
+                                    <span class="bg-slate-100 px-2.5 py-1 rounded">{{ item.target_role }} {{ item.target_name }}</span>
+                                    <span><i class="fa-regular fa-user mr-1.5"></i>{{ item.submitter_name || '匿名' }}</span>
                                 </div>
-                                <button @click.stop="deleteItem(item.id)" class="w-6 h-6 rounded flex items-center justify-center text-slate-300 hover:bg-red-50 hover:text-red-500 transition-colors">
-                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                <button @click.stop="deleteItem(item.id)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:bg-red-50 hover:text-red-500 transition-colors">
+                                    <i class="fa-solid fa-trash-can text-sm"></i>
                                 </button>
                             </div>
 
-                            <div v-if="isNew(item.created_at)" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full m-2 shadow-sm animate-pulse"></div>
+                            <div v-if="isNew(item.created_at)" class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full m-3 shadow-sm animate-pulse"></div>
                         </div>
                     </div>
                 </div>
@@ -285,58 +273,64 @@
         </main>
     </template>
 
-
     <div v-if="showModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate__animated animate__fadeIn" @click.self="showModal=false">
-        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate__animated animate__zoomIn">
-            <div class="p-6 text-white flex justify-between items-start" 
+        <div class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate__animated animate__zoomIn">
+            <div class="p-8 text-white flex justify-between items-start" 
                  :class="curItem.type === 'commendation' ? 'card-gradient-2' : 'card-gradient-3'">
                 <div>
-                    <div class="text-[10px] font-black uppercase tracking-widest opacity-80 mb-1">Feedback Detail</div>
-                    <h3 class="text-2xl font-bold flex items-center gap-2">
+                    <div class="text-xs font-black uppercase tracking-widest opacity-80 mb-2">Feedback Detail</div>
+                    <h3 class="text-3xl font-bold flex items-center gap-3">
                         {{ curItem.department }}
-                        <span class="text-xs bg-white/20 px-2 py-0.5 rounded backdrop-blur-sm font-normal">{{ curItem.target_role }}</span>
+                        <span class="text-sm bg-white/20 px-3 py-1 rounded-lg backdrop-blur-sm font-normal">{{ curItem.target_role }}</span>
                     </h3>
                 </div>
-                <button @click="showModal=false" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">✕</button>
+                <button @click="showModal=false" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors text-lg">✕</button>
             </div>
 
-            <div class="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <span class="text-[10px] text-slate-400 font-bold uppercase block mb-1">具体对象</span>
-                        <div class="font-bold text-slate-800">{{ curItem.target_name || '未填写' }}</div>
+            <div class="p-8 space-y-8 max-h-[70vh] overflow-y-auto">
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <!-- 修改点 1：标签字体从 text-xs 加大到 text-base -->
+                        <span class="text-base text-slate-500 font-bold uppercase block mb-2">具体对象</span>
+                        <div class="font-bold text-slate-800 text-lg">{{ curItem.target_name || '未填写' }}</div>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        <span class="text-[10px] text-slate-400 font-bold uppercase block mb-1">提交时间</span>
-                        <div class="font-bold text-slate-800 text-xs font-mono mt-0.5">{{ formatTime(curItem.created_at) }}</div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        <!-- 修改点 2：标签字体从 text-xs 加大到 text-base -->
+                        <span class="text-base text-slate-500 font-bold uppercase block mb-2">提交时间</span>
+                        <div class="font-bold text-slate-800 text-lg font-mono">{{ formatTime(curItem.created_at) }}</div>
                     </div>
                 </div>
 
                 <div>
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">内容</h4>
-                    <div class="text-sm text-slate-600 leading-7 bg-slate-50 p-4 rounded-xl border border-slate-100 whitespace-pre-wrap">{{ curItem.description }}</div>
+                    <!-- 修改点 3：标签字体从 text-xs 加大到 text-base -->
+                    <h4 class="text-base font-bold text-slate-500 uppercase tracking-widest mb-3">内容</h4>
+                    <div class="text-lg text-slate-700 leading-8 bg-slate-50 p-6 rounded-2xl border border-slate-100 whitespace-pre-wrap">{{ curItem.description }}</div>
                 </div>
-                                <div class="pt-2">
-                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                        <span class="text-[10px] text-indigo-400 font-bold uppercase block mb-2">提交人信息</span>
-                        <div class="space-y-2">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-user text-indigo-400 text-sm w"></i>
-                                <span class="text-slate-700 font-medium">{{ curItem.submitter_name || '未填写' }}</span>
+
+                <div class="pt-2">
+                    <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+                        <!-- 修改点 4：标签字体从 text-xs 加大到 text-base -->
+                        <span class="text-base text-indigo-500 font-bold uppercase block mb-3">提交人信息</span>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-user text-indigo-400 text-base w-5 text-center"></i>
+                                <span class="text-slate-800 font-bold text-lg">{{ curItem.submitter_name || '未填写' }}</span>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-phone text-indigo-400 text-sm w-5"></i>
-                                <span class="text-slate-700 font-medium">{{ curItem.submitter_phone || '未填写' }}</span>
-                                <a v-if="curItem.submitter_phone" :href="'tel:'+curItem.submitter_phone" class="ml-auto bg-indigo-600 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-indigo-700 transition-all">
+                            <div class="flex items-center gap-3">
+                                <i class="fa-solid fa-phone text-indigo-400 text-base w-5 text-center"></i>
+                                <span class="text-slate-800 font-bold text-lg">{{ curItem.submitter_phone || '未填写' }}</span>
+                                <a v-if="curItem.submitter_phone" :href="'tel:'+curItem.submitter_phone" class="ml-auto bg-indigo-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-all">
                                     <i class="fa-solid fa-phone mr-1"></i> 拨打
                                 </a>
                             </div>
                         </div>
                     </div>
                 </div>
-            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                <span class="text-[10px] text-slate-400 font-mono">ID: {{ curItem.id }} · IP: {{ curItem.ip_address }}</span>
-                <button @click="deleteItem(curItem.id)" class="text-xs font-bold text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors">
+            </div>
+            
+            <div class="px-8 py-5 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                <span class="text-xs text-slate-400 font-mono">ID: {{ curItem.id }} · IP: {{ curItem.ip_address }}</span>
+                <button @click="deleteItem(curItem.id)" class="text-sm font-bold text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors">
                     删除此记录
                 </button>
             </div>
