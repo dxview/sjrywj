@@ -471,7 +471,7 @@
 
 
                     <div class="bg-white rounded-xl p-5 shadow-sm border border-slate-100">
-                        <label class="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">详细描述 <span class="text-red-400">*</span></label>
+                        <label class="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">内容 <span class="text-red-400">*</span></label>
                         <textarea v-model="form.description" rows="5" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm outline-none focus:bg-white transition-all resize-none placeholder-slate-400 text-slate-800" :class="themeClass.ring" :placeholder="currentView === 'commendation' ? '请输入具体时间...' : '请描述具体的时间、地点及经过，方便我们核实...'"></textarea>
                     </div>
 
@@ -585,14 +585,13 @@
             const showDeptModal = ref(false);
             const loading = ref(false);
             const submitted = ref(false);
-            const activeGroup = ref('行政管理科室');
+            const activeGroup = ref('门诊及收费');
             const isClickScrolling = ref(false);
             const showBackHint = ref(false);
             const backNavigationTimer = ref(null);
 
             const deptGroups = {
-                "行政管理科室": ["医务部/质安办", "医患办", "护理部", "预防保健科", "医保办", "财务科"],
-                "门诊及收费": ["门诊部", "门诊收费处", "住院收费处", "急诊医学科"],
+                "门诊及收费": ["门诊部", "门诊收费处", "住院收费处", "急诊医学科", "医保办"],
                 "外科系统": ["普通外科", "泌尿外科", "神经外科", "骨科一病区", "骨科二病区", "麻醉科"],
                 "内科系统": ["呼吸内科", "心血管内科", "消化内科", "神经内科", "肿瘤科", "感染性疾病科"],
                 "妇儿科室": ["妇产科", "儿科"],
